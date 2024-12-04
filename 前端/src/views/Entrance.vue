@@ -3,9 +3,46 @@
     <div style="height: 100%">
       <el-card style="width: 30%;margin: auto auto; margin-top:5rem; min-width: 500px;">
         <div style="display: inline">
-          <div style="line-height: 40px;margin: 5px 0">
-            <el-button style="font-size: 24px;padding:16px 50px" type="primary" @click="enter">进入系统</el-button>
+          <!-- 用户名输入框 -->
+          <div style="line-height: 40px; margin: 5px 0">
+            <el-input
+                v-model="username"
+                placeholder="请输入用户名"
+                style="width: 80%; margin: auto auto; font-size: 16px; padding: 10px"
+            />
           </div>
+
+          <!-- 密码输入框 -->
+          <div style="line-height: 40px; margin: 5px 0">
+            <el-input
+                v-model="password"
+                placeholder="请输入密码"
+                type="password"
+                style="width: 80%; margin: auto auto; font-size: 16px; padding: 10px"
+            />
+          </div>
+
+          <!-- 登录按钮 -->
+          <div style="line-height: 40px; margin: 5px 0">
+            <el-button
+                style="font-size: 24px; padding: 16px 50px; width: 80%"
+                type="primary"
+                @click="enter"
+            >
+              登录
+            </el-button>
+          </div>
+
+          <!-- 注册按钮 -->
+          <div style="line-height: 40px; margin: 5px 0">
+            <el-button
+                style="font-size: 24px; padding: 16px 50px; width: 80%"
+                @click="register"
+            >
+              注册
+            </el-button>
+          </div>
+
         </div>
       </el-card>
     </div>
