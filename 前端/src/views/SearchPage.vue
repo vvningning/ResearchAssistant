@@ -41,7 +41,7 @@
 </template>
 
 <script>
-import ResultCard from "@/components/ResultCard";
+import ResultCard from "@/views/ResultCard.vue";
 
 export default {
   name: "SearchPage",
@@ -124,8 +124,8 @@ export default {
 .main-div {
   position: relative;
   margin-top: 20px;
-  width: 80%;
-  left: 10%;
+  width: 99%;
+  left: auto;
 }
 
 .result-card {
