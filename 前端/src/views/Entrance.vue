@@ -1,5 +1,5 @@
 <template>
-  <div class="background" style="text-align: center; width: 100%">
+  <div class="background" style="text-align: center">
     <div class="content">
       <el-card style="width: 30%; margin: auto auto; min-width: 500px">
         <div style="display: inline">
