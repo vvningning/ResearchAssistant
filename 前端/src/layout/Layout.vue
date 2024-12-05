@@ -5,7 +5,7 @@
     </header>
     <div style="display: flex">
       <Aside/>
-      <router-view style="flex:1"/>
+      <router-view style="flex:1;max-width: 1200px; margin: 0 auto;"/>
     </div>
   </div>
 </template>
