@@ -44,7 +44,7 @@ def search():
 
 if __name__ == '__main__':
     # 连接到 Milvus 服务器
-    connections.connect("default", host="192.168.2.1", port="19530")
+    connections.connect("default", host="localhost", port="19530")
     create_collection()
     insert()
     # search()
