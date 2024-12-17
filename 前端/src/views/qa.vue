@@ -22,7 +22,7 @@
           </div>
         </el-card>
         <div style="display: flex; margin-top: 10px">
-          <el-input style="margin-right: 10px" v-model="userInput" type="text" placeholder="请输入问题" />
+          <el-input style="margin-right: 10px" v-model="question" type="text" placeholder="请输入问题" />
           <el-button type="primary" @click="sendQuestion">发送</el-button>
         </div>
       </div>
@@ -31,8 +31,31 @@
 </template>
 
 <script>
+import {
+  sendQuestion
+} from '../api/chat'
+
 export default {
-  name: "qa"
+  name: "qa",
+  data() {
+    return {
+      question: '',
+      ans: '',
+      chatMessages: []
+    }
+  },
+  created() {
+
+  },
+  methods: {
+    sendQuestion() {
+      sendQuestion(this.question).then(response => {
+        this.ans = response.ans;
+        this.chatMessages.push({sender: this.question, text: this.ans})
+        console.log('发送的问题:', this.chatMessages);
+      })
+    }
+  }
 }
 </script>
 
