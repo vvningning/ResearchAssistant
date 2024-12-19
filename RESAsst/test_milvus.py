@@ -17,7 +17,7 @@ def create_collection():
 
     index_params = {
         "index_type": "IVF_FLAT",
-        "metric_type": "L2",
+        "metric_type": "COSINE",
         "params": {"nlist": 128}
     }
     collection.create_index(field_name="embedding", index_params=index_params)
