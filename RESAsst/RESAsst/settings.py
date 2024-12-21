@@ -81,7 +81,7 @@ WSGI_APPLICATION = "RESAsst.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'live',
+        'NAME': 'asst',
         'USER': 'test',
         'PASSWORD': '123456',
         'HOST': '127.0.0.1',

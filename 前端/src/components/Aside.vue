@@ -22,6 +22,12 @@
     </el-menu-item>
 
   </el-menu>
+<!--  <el-tree-->
+<!--      style="max-width: 600px"-->
+<!--      :data="data"-->
+<!--      :props="defaultProps"-->
+<!--      @node-click="handleNodeClick"-->
+<!--  />-->
 </div>
 </template>
 
@@ -78,7 +84,70 @@ export default defineComponent({
         {value: '2', label: '智慧城市',},
         {value: '3', label: '滴滴',},
         {value: '4', label: '数据服务市场',},
-      ]
+      ],
+      // data: [
+      //   {
+      //     label: 'Level one 1',
+      //     children: [
+      //       {
+      //         label: 'Level two 1-1',
+      //         children: [
+      //           {
+      //             label: 'Level three 1-1-1',
+      //           },
+      //         ],
+      //       },
+      //     ],
+      //   },
+      //   {
+      //     label: 'Level one 2',
+      //     children: [
+      //       {
+      //         label: 'Level two 2-1',
+      //         children: [
+      //           {
+      //             label: 'Level three 2-1-1',
+      //           },
+      //         ],
+      //       },
+      //       {
+      //         label: 'Level two 2-2',
+      //         children: [
+      //           {
+      //             label: 'Level three 2-2-1',
+      //           },
+      //         ],
+      //       },
+      //     ],
+      //   },
+      //   {
+      //     label: 'Level one 3',
+      //     children: [
+      //       {
+      //         label: 'Level two 3-1',
+      //         children: [
+      //           {
+      //             label: 'Level three 3-1-1',
+      //           },
+      //         ],
+      //       },
+      //       {
+      //         label: 'Level two 3-2',
+      //         children: [
+      //           {
+      //             label: 'Level three 3-2-1',
+      //           },
+      //         ],
+      //       },
+      //     ],
+      //   },
+      // ],
+      //
+      // // 树形数据字段配置
+      // defaultProps: {
+      //   children: 'children',
+      //   label: 'label',
+      // },
     }
   },
   mounted() {
