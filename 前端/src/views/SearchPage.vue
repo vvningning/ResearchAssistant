@@ -17,7 +17,7 @@
     <el-row :gutter="40">
       <el-col :span="12">
         <div v-if="leftResultList.length !== 0">
-          <el-divider content-position="left">传统检索结果</el-divider>
+          <el-divider content-position="left" class="divider">传统检索结果</el-divider>
           <result-card v-for="(result, index) in leftResultList"
                        :data="result"
                        :key="index"
@@ -28,7 +28,7 @@
       </el-col>
       <el-col :span="12">
         <div v-if="rightResultList.length !== 0">
-          <el-divider content-position="left">大模型检索结果</el-divider>
+          <el-divider content-position="left" class="divider">大模型检索结果</el-divider>
           <result-card v-for="(result, index) in rightResultList"
                        :data="result"
                        :key="index"
@@ -126,6 +126,9 @@ export default {
   margin-top: 20px;
   width: 99%;
   left: auto;
+}
+.divider{
+  //background-color: #F2F7F7
 }
 
 .result-card {
