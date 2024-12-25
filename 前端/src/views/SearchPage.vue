@@ -17,7 +17,7 @@
     <el-row :gutter="40">
       <el-col :span="12">
         <div v-if="leftResultList.length !== 0 || rightResultList.length !== 0">
-          <el-divider content-position="left">字符串匹配检索结果</el-divider>
+          <el-divider class="res-divider" content-position="left">字符串匹配检索结果</el-divider>
           <result-card v-for="(result, index) in leftResultList"
                        :data="result"
                        :key="index"
@@ -28,7 +28,7 @@
       </el-col>
       <el-col :span="12">
         <div v-if="leftResultList.length !== 0 || rightResultList.length !== 0">
-          <el-divider content-position="left">BM25检索结果</el-divider>
+          <el-divider class="res-divider" content-position="left">BM25检索结果</el-divider>
           <result-card v-for="(result, index) in rightResultList"
                        :data="result"
                        :key="index"
@@ -64,6 +64,7 @@ export default {
       } else {
         request.get("/strmatch/", {
           params: {
+            //以后改成从sessions获取
             username: 'user1',
             keyword: this.keyword,
           }
@@ -74,6 +75,7 @@ export default {
         })
         request.get("/bm25/", {
           params: {
+            //以后改成从sessions获取
             username: 'user1',
             keyword: this.keyword,
           }
@@ -94,7 +96,7 @@ export default {
   position: relative;
   margin-top: 20px;
   width: 80%;
-  left: 10%;
+  //left: 10%;
 }
 
 .result-card {
@@ -107,5 +109,9 @@ export default {
   width: 50%;
   left: 25%;
   margin-top: 150px;
+}
+
+.res-divider /deep/ .el-divider__text {
+  background-color: rgb(242, 247, 247);
 }
 </style>
