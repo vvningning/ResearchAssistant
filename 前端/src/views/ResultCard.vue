@@ -3,10 +3,10 @@
     <el-card class="main-card">
       <template #header>
         <div class="header" style="height: 20px; text-align: left; font-weight: bold">
-          <p v-html="data.title"></p>
+          <p v-html="data.name"></p>
         </div>
       </template>
-      <p v-html="data.text"></p>
+      <p v-html="data.content"></p>
     </el-card>
   </div>
 </template>
