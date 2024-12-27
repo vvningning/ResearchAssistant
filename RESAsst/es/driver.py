@@ -11,7 +11,7 @@ def get_all_doc():
         port=3306,
         user='test',
         password='123456',
-        database='search'
+        database='asst'
     )
 
     cursor = conn.cursor()
