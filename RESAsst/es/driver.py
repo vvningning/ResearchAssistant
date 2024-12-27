@@ -77,6 +77,7 @@ def init_index():
             'content': content
         }
 
+
         es.index(index=index_name, id=eid, body=document)
 
 
