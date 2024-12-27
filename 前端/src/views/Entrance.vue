@@ -37,32 +37,7 @@
   </div>
 </template>
 
-<script>
-import { ref } from "vue";
 
-export default {
-  name: "BackgroundDemo",
-  setup() {
-    const username = ref("");
-    const password = ref("");
-
-    const enter = () => {
-      console.log("登录：", username.value, password.value);
-    };
-
-    const register = () => {
-      console.log("注册：", username.value, password.value);
-    };
-
-    return {
-      username,
-      password,
-      enter,
-      register,
-    };
-  },
-};
-</script>
 
 <style scoped>
 /* 背景渐变样式 */
