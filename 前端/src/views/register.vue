@@ -19,6 +19,11 @@
         <input type="email" v-model="email" id="email" placeholder="请输入邮箱" required />
       </div>
 
+      <div class="form-group">
+        <label for="email">验证码：</label>
+        <input id="verification" placeholder="请输入验证码" required />
+      </div>
+
       <!-- 发送验证码按钮 -->
       <div class="form-group">
         <button type="button" @click="sendVerificationCode" :disabled="isVerifying">
@@ -41,6 +46,7 @@
 
 <script>
 import axios from 'axios';
+import {register, sendVerification} from "@/api/register";
 
 export default {
   name: 'Register',
@@ -79,22 +85,20 @@ export default {
       this.isVerifying = true;
       this.verificationStatus = '正在发送验证码...';
 
-      try {
-        const response = await axios.post('http://localhost:3000/send-verification', {
-          email: this.email,
-        });
-
-        if (response.data.success) {
-          this.verificationStatus = '验证码已发送，请检查您的邮箱！';
-        } else {
+      sendVerification(this.email).then(response => {
+        try {
+          if(response) {
+            this.verificationStatus = '验证码已发送，请检查您的邮箱！';
+          } else {
+            this.verificationStatus = '发送验证码失败，请稍后再试。';
+          }
+        }  catch (error) {
           this.verificationStatus = '发送验证码失败，请稍后再试。';
+          console.error('验证码发送失败:', error);
+        } finally {
+          this.isVerifying = false;
         }
-      } catch (error) {
-        this.verificationStatus = '发送验证码失败，请稍后再试。';
-        console.error('验证码发送失败:', error);
-      } finally {
-        this.isVerifying = false;
-      }
+      })
     },
   },
 };

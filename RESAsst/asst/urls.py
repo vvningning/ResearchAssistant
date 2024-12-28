@@ -7,6 +7,7 @@ urlpatterns = [
     path('chat/', views.chat, name='chat'),
     path('strmatch/', views.strmatch),
     path('bm25/', views.bm25),
-    path('login/', views.login)
+    path('login/', views.login),
+    path('sendVerification/', views.sendVerification),
 ]
 urlpatterns += staticfiles_urlpatterns()
