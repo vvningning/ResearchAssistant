@@ -1,10 +1,10 @@
 import request from '@/utils/request'
 
-export function register(username, password, email) {
+export function register(username, password, email, verification, sentVerification) {
     return request({
         url: '/register/',
         method: 'get',
-        params: { username, password, email }
+        params: { username, password, email, verification, sentVerification }
     })
 }
 

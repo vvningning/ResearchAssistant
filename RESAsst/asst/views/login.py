@@ -1,14 +1,15 @@
+import django
 import pymysql
+from django.db import connections
 from django.http import HttpResponse, JsonResponse
 
 
 def login(request):
-    conn = pymysql.connect(
-        host='localhost',
-        port=3306,
-        user='root',
-        password='ftc020106',
-        database='paper')
+    # 确保 Django 配置已初始化（如果在独立脚本中使用）
+    django.setup()
+
+    # 获取数据库连接
+    conn = connections['default']
 
     username = request.GET.get('username')
     password = request.GET.get('password')

@@ -20,8 +20,8 @@
       </div>
 
       <div class="form-group">
-        <label for="email">验证码：</label>
-        <input id="verification" placeholder="请输入验证码" required />
+        <label for="verification">验证码：</label>
+        <input id="verification" v-model="verification" placeholder="请输入验证码" required />
       </div>
 
       <!-- 发送验证码按钮 -->
@@ -33,7 +33,7 @@
 
       <!-- 注册提交按钮 -->
       <div class="form-group">
-        <button type="submit">注册</button>
+        <button type="submit" @click="register">注册</button>
       </div>
     </form>
 
@@ -55,23 +55,29 @@ export default {
       username: '',
       password: '',
       email: '',
+      verification: '',
       verificationStatus: '', // 显示验证码发送状态
       isVerifying: false,      // 是否正在发送验证码
+      sentVerification: ''
     };
   },
   methods: {
     // 处理注册表单提交
-    handleSubmit() {
-      // 在此可以添加密码和验证码的验证逻辑
-
-      console.log('注册信息：', {
-        username: this.username,
-        password: this.password,
-        email: this.email,
-      });
-
-      // 提交注册请求（可以根据需要替换为实际的注册 API）
-      alert('注册成功！');
+    register() {
+      if (this.sentVerification !== this.verification)
+        alert('验证码错误！')
+      else
+        // 在此可以添加密码和验证码的验证逻辑
+        register(this.username, this.password, this.email, this.verification, this.sentVerification).then(response => {
+          if (response.res === 1) {
+            alert('用户名已被使用，请更换用户名！')
+            this.$router.push({path:'/register'})
+          }
+          else {
+            alert('注册成功！')
+            this.$router.push({path:'/home/content'})
+          }
+        })
     },
 
     // 发送验证码
@@ -84,10 +90,13 @@ export default {
       // 开始发送验证码请求
       this.isVerifying = true;
       this.verificationStatus = '正在发送验证码...';
+      this.sentVerification = '-1'
 
       sendVerification(this.email).then(response => {
         try {
           if(response) {
+            this.sentVerification = response.verification_code;
+            console.log(this.sentVerification)
             this.verificationStatus = '验证码已发送，请检查您的邮箱！';
           } else {
             this.verificationStatus = '发送验证码失败，请稍后再试。';

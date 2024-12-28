@@ -9,5 +9,6 @@ urlpatterns = [
     path('bm25/', views.bm25),
     path('login/', views.login),
     path('sendVerification/', views.sendVerification),
+    path('register/', views.register),
 ]
 urlpatterns += staticfiles_urlpatterns()
