@@ -21,7 +21,7 @@
           </div>
 
           <div style="line-height: 40px; margin: 5px 0">
-            <el-button style="font-size: 24px; padding: 16px 50px; width: 80%" type="primary" @click="enter">
+            <el-button style="font-size: 24px; padding: 16px 50px; width: 80%" type="primary" @click="sendUser">
               登录
             </el-button>
           </div>
@@ -37,7 +37,33 @@
   </div>
 </template>
 
+<script>
+import {
+  sendUser
+} from '../api/login'
 
+export default {
+  name: "login",
+  data() {
+    return {
+      username: '',
+      password: '',
+    }
+  },
+  created() {
+
+  },
+  methods: {
+    sendUser() {
+      sendUser(this.username, this.password).then(response => {
+        this.username = response.username;
+
+        console.log('用户名:', this.username);
+      })
+    }
+  }
+}
+</script>
 
 <style scoped>
 /* 背景渐变样式 */
