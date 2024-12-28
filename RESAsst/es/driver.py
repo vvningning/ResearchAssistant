@@ -9,9 +9,9 @@ def get_all_doc():
     conn = pymysql.connect(
         host='localhost',
         port=3306,
-        user='test',
-        password='123456',
-        database='asst'
+        user='root',
+        password='0000',
+        database='search'
     )
 
     cursor = conn.cursor()
@@ -76,7 +76,6 @@ def init_index():
             'name': name,
             'content': content
         }
-
 
         es.index(index=index_name, id=eid, body=document)
 
@@ -143,7 +142,7 @@ def add_index(eid, username, name, content):
 
 # test script
 if __name__ == '__main__':
-    es.indices.delete(index=index_name)
+    # es.indices.delete(index=index_name)
     # init_index()
     # add_index(8, 'user2', '让我们说中文', '南京市长江大桥')
     # add_index(9, 'user1', '让我们说中文', '南京市长江大桥')
