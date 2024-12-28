@@ -9,7 +9,12 @@
       </el-card>
       <el-card style="width: 100%; height: 80%; margin-top: 10px">
         <div style="display: flex; width: 100%;height: 100%">
-          论文内容
+          <iframe
+              :src="fileUrl"
+              id="iframeBox"
+              ref="iframeRef"
+              style="width: 100%; height: 800px"
+          ></iframe>
           <p>{{ content }}</p>
         </div>
       </el-card>
@@ -34,6 +39,7 @@
 import {
   sendQuestion
 } from '../api/chat'
+import pdf from "vue-pdf"
 
 export default {
   name: "qa",
@@ -41,6 +47,7 @@ export default {
     return {
       question: '',
       ans: '',
+      fileUrl: "../pdf/test.pdf",
       chatMessages: []
     }
   },
@@ -55,6 +62,9 @@ export default {
         console.log('发送的问题:', this.chatMessages);
       })
     }
+  },
+  components:{
+    pdf
   }
 }
 </script>
