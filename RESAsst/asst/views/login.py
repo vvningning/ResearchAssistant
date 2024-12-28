@@ -1,5 +1,5 @@
 import pymysql
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 
 
 def login(request):
@@ -13,6 +13,7 @@ def login(request):
     username = request.GET.get('username')
     password = request.GET.get('password')
     res = False
+    response = {}
     if username and password:
         cursor = conn.cursor()
         cursor.execute('SELECT username, password, email FROM user WHERE username=%s AND password = %s', (username, password))
@@ -22,4 +23,7 @@ def login(request):
         if user:
             print("OK")
             res = True
-    return HttpResponse(username, res)
+    response['username'] = username
+    response['res'] = res
+    print(response)
+    return JsonResponse(response)

@@ -40,7 +40,16 @@ const routes = [
       title: "欢迎登陆",
       icon: "shopping-basket-2-fill"
     },
-  }
+  },
+  {
+    path: '/register',
+    name: 'register',
+    component: () => import("@/views/register.vue"),
+    meta: {
+      title: "注册",
+      icon: "shopping-basket-2-fill"
+    },
+  },
 ]
 
 const router = createRouter({

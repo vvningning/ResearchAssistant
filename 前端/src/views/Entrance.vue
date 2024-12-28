@@ -41,13 +41,14 @@
 import {
   sendUser
 } from '../api/login'
+import axios from "axios";
 
 export default {
   name: "login",
   data() {
-    return {
+    return{
       username: '',
-      password: '',
+      loginSuccess: null,
     }
   },
   created() {
@@ -56,10 +57,23 @@ export default {
   methods: {
     sendUser() {
       sendUser(this.username, this.password).then(response => {
-        this.username = response.username;
+        // 获取后端返回的数据
+        const data = response.data;
+        console.log('用户名:', response.username);
+        // 判断登录是否成功
+        if (response.username !== undefined && response.res !== undefined) {
+          this.username = response.username;  // 更新前端的用户名
+          this.loginSuccess = response.res;   // 获取登录结果（成功/失败）
 
-        console.log('用户名:', this.username);
+          this.$router.push({path:'/home/content',query: {username:this.username}})
+        } else {
+          console.error('后端返回的数据格式不正确');
+        }
       })
+    },
+
+    register() {
+      this.$router.push({path:'/register'})
     }
   }
 }
