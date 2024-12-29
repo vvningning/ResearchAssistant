@@ -8,7 +8,7 @@ class User(models.Model):
 
 
 class Build(models.Model):
-    eid = models.IntegerField(primary_key=True)
+    eid = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100, verbose_name='文件名')
     type = models.CharField(max_length=100, verbose_name='文件类型')
     path = models.CharField(max_length=200, verbose_name='文件路径')
