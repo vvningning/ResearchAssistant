@@ -81,9 +81,9 @@ WSGI_APPLICATION = "RESAsst.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'paper',
-        'USER': 'root',
-        'PASSWORD': 'ftc020106',
+        'NAME': 'asst',
+        'USER': 'test',
+        'PASSWORD': '123456',
         'HOST': '127.0.0.1',
         'PORT': '3306',
         'OPTIONS': {'charset': 'utf8mb4'},
