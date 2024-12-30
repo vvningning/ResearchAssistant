@@ -3,7 +3,7 @@
     <el-card class="main-card">
       <template #header>
         <div class="header" style="height: 20px; text-align: left; font-weight: bold">
-          <p v-html="data.name"></p>
+          <el-link v-html="data.name" @click="jump()"></el-link>
         </div>
       </template>
       <p v-html="data.content"></p>
@@ -15,12 +15,11 @@
 export default {
   name: "ResultCard",
   props: ['data'],
-  data() {
-    return {
-      detailVisible: false,
-      timer: ''
+  methods: {
+    jump() {
+      this.$router.push({path: '/home/qa', query: {eid:this.data.eid}})
     }
-  },
+  }
 }
 </script>
 

@@ -1,3 +1,5 @@
+import json
+
 from django.db.models import Q
 from django.http import HttpResponse
 from django.forms.models import model_to_dict
@@ -10,7 +12,7 @@ from es.driver import query
 
 def strmatch(request):
     keyword = request.GET.get('keyword')
-    username = request.GET.get('user')
+    username = request.GET.get('username')
     results = Build.objects.filter(
         Q(name__icontains=keyword) | Q(content__icontains=keyword),
         username=username,
@@ -19,7 +21,6 @@ def strmatch(request):
     res = list()
     pattern = r".{0,150}" + re.escape(keyword) + r".{0,150}"
     for result in results:
-        print(result.name)
         temp = re.findall(pattern, result.content, flags=re.DOTALL)
         score = 0
         if len(temp) > 0:
@@ -39,18 +40,17 @@ def strmatch(request):
         res.append({'data': result, 'score': score})
 
     res = sorted(res, key=lambda x: x['score'], reverse=True)
-
-    return HttpResponse([model_to_dict(item['data'], fields=['name', 'content']) for item in res])
+    res = [model_to_dict(item['data'], fields=['eid', 'name', 'content']) for item in res]
+    return HttpResponse(json.dumps(res, ensure_ascii=False))
 
 
 def bm25(request):
     keyword = request.GET.get('keyword')
-    username = request.GET.get('user')
+    username = request.GET.get('username')
     query_res = query(username, keyword)
     res = list()
     for item in query_res['hits']['hits']:
-        name = ''
-        content = ''
+        eid = item['_id']
         highlight = item['highlight']
         source = item['_source']
         if 'name' in highlight:
@@ -65,7 +65,7 @@ def bm25(request):
                        .replace("<em>", '<font style="color:red;">')
                        .replace("</em>", '</font>'))
         else:
-            content = source['content']
-        res.append({'name': name, 'content': content})
+            content = source['content'][:300]
+        res.append({'eid': eid, 'name': name, 'content': content})
 
-    return HttpResponse(res)
+    return HttpResponse(json.dumps(res, ensure_ascii=False))
