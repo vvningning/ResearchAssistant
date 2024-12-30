@@ -16,6 +16,7 @@ APIKEY = 'c3bb38b3fc5fdc87ad9b1bc670c3e2e9'
 def chat(request):
     response = {}
     question = request.GET.get('question')
+    print(question)
     language = langid.classify(question)[0]
     top_k = 3
     retrieval = retriever_qa(question, top_k)
