@@ -1,9 +1,14 @@
 <template>
   <div class="register-container">
+    <video class="background-video" autoplay muted loop>
+      <source src="@/assets/bg.mp4" type="video/mp4" />
+      您的浏览器不支持视频播放。
+    </video>
+
     <h2>注册</h2>
 
     <!-- 注册表单 -->
-    <form @submit.prevent="handleSubmit">
+    <form @submit.prevent="handleSubmit" style="border: transparent">
       <div class="form-group">
         <label for="username">用户名：</label>
         <input type="text" v-model="username" id="username" placeholder="请输入用户名" required />
@@ -121,6 +126,16 @@ export default {
   border: 1px solid #ccc;
   border-radius: 10px;
   background-color: #f9f9f9;
+}
+
+.background-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* 保持视频覆盖整个背景 */
+  z-index: -1; /* 确保视频在其他内容下面 */
 }
 
 h2 {
