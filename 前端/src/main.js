@@ -9,6 +9,7 @@ import VueWechatTitle from 'vue-wechat-title'
 import FileSaver from 'file-saver'
 import XLSX from 'xlsx'
 import 'animate.css'
+import './fonts/fonts.css'
 
 //引入css
 import '@/assets/css/global.css'
