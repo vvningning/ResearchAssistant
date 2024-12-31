@@ -2,7 +2,7 @@
   <div class="container">
     <div class="left-panel">
       <el-card style="width: 100%; height: 20%">
-        <div style="display: flex; width: 100%;height: 100%">
+        <div style="display: flex; width: 100%; height: 100%">
           论文关键词
           <p>{{ keywords }}</p>
         </div>
@@ -22,7 +22,25 @@
     <div class="right-panel">
       <div style="display: flex; flex-direction: column; height: 100%">
         <!-- 聊天记录部分 -->
-        <el-card class="chat-card">
+        <el-card class="chat-card" style="position: relative;">
+          <div style="position: absolute; right: 15px; top: 0">
+            <el-dropdown @command="handleCommand" trigger="click" :dropdown-append-to-body="true">
+              <el-button type="text">
+                <img src="../assets/images/more.png" alt="更多功能" width="20"/>
+              </el-button>
+              <template #dropdown>
+                <el-dropdown-menu style="white-space: nowrap;">
+                  <el-dropdown-item command="clear" style="display: flex; align-items: center;">
+                    <img src="../assets/images/clearMsg.png" alt="清空聊天" height="20" style="margin-right: 10px" />
+                    清空聊天内容
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
+
+          <div style="margin-bottom: 15px"></div>
+
           <div v-for="(message, index) in chatMessages" :key="index" class="chat-message">
             <!-- 用户消息 -->
             <div v-if="message.role === 'user'" class="message" style="justify-content: flex-end;">
@@ -73,6 +91,10 @@ export default {
   },
   methods: {
     sendQuestion() {
+      if (!this.question.trim()) {
+        console.warn("输入内容不得为空");
+        return;
+      }
       this.isInputDisabled = true;
       this.isButtonDisabled = true;
       this.chatMessages.push({role: 'user', text: this.question});
@@ -80,7 +102,7 @@ export default {
       this.chatMessages.push({role: 'bot', text: '.'});
       this.startTypingEffect();
 
-      sendQuestion(this.question).then(response => {
+      sendQuestion(this.question, this.$route.query.eid).then(response => {
         this.question = '';
         this.isInputDisabled = false;
             this.stopTypingEffect();
@@ -146,6 +168,24 @@ export default {
           this.sendQuestion();
       }
     },
+
+    clearChat() {
+      if (this.chatMessages.length === 0)
+        return ;
+      this.$confirm('您确定要清空聊天记录吗?', '确认清空', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }).then(() => {
+        this.chatMessages = [];
+        })
+    },
+
+    handleCommand(command) {
+      if (command === 'clear') {
+        this.clearChat();
+      }
+    }
   },
   components:{
     pdf
@@ -175,7 +215,7 @@ export default {
     width: 100%;
     height: 100%;
     overflow-y: auto;
-    padding: 15px;
+    padding: 5px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
 
@@ -190,11 +230,10 @@ export default {
   }
 
   .message-user {
-    font-weight: bold;
-    font-size: 14px;
     padding: 10px;
-    color: #4a90e2;
-    text-align: right;
+    color: #003472;
+    max-width: 80%;
+    text-align: left;
     white-space: pre-line;
     word-break: break-word;
     word-wrap: break-word;
