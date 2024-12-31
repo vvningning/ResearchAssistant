@@ -52,104 +52,194 @@
 
 <script>
 import {
-  sendQuestion
+    sendQuestion
 } from '../api/chat'
-import pdf from "vue-pdf"
+import axios from 'axios'
+import md5 from 'js-md5'
 
 export default {
-  name: "qa",
-  data() {
-    return {
-      question: '',
-      fileUrl: "../pdf/test.pdf",
-      chatMessages: [],
-      isInputDisabled: false,
-      isButtonDisabled: false,
-      typingInterval: null
-    }
-  },
-  created() {
+    name: "qa",
+    data() {
+        return {
+            question: '',
+            chatMessages: [],
+            isInputDisabled: false,
+            isButtonDisabled: false,
+            typingInterval: null,
 
-  },
-  methods: {
-    sendQuestion() {
-      this.isInputDisabled = true;
-      this.isButtonDisabled = true;
-      this.chatMessages.push({role: 'user', text: this.question});
-      console.log('发送的问题:', this.question);
-      this.chatMessages.push({role: 'bot', text: '.'});
-      this.startTypingEffect();
-
-      sendQuestion(this.question).then(response => {
-        this.question = '';
-        this.isInputDisabled = false;
-            this.stopTypingEffect();
-        this.chatMessages[this.chatMessages.length - 1].text = '';
-        this.displayBotMessage(response.ans);
-      })
-    },
-
-    // 启动动态“...”效果
-    startTypingEffect() {
-      let dotCount = 1;
-      this.typingInterval = setInterval(() => {
-        const botMessage = this.chatMessages[this.chatMessages.length - 1];
-        if (dotCount < 3) {
-          botMessage.text += '.';
-          dotCount++;
-        } else {
-          botMessage.text = '.';
-          dotCount = 1;
+            pdfPath: '/pdf/GraphGPT.pdf',
+            selectedText: '',
+            translatedText: '',
+            tooltipStyle: {
+                top: '0px',
+                left: '0px',
+                display: 'none',
+            }
         }
-      }, 500);
     },
+    mounted() {
+        // 页面加载完成后，修改框架高度
+        this.changeFrameHeight();
+        this.getSelectedText();
 
-    // 停止动态“...”效果
-    stopTypingEffect() {
-      if (this.typingInterval) {
-        clearInterval(this.typingInterval);
-        this.typingInterval = null;
-      }
-    },
-
-    // 显示 Bot 消息的打字效果
-    displayBotMessage(message) {
-      let index = 0;
-      const fullMessage = message;
-      const botMessage = this.chatMessages[this.chatMessages.length - 1];
-
-      // 设置定时器逐个字符显示
-      const typingInterval = setInterval(() => {
-        botMessage.text += fullMessage.charAt(index);  // 逐个字符添加到消息中
-        index++;
-
-        if (index === fullMessage.length) {
-          clearInterval(typingInterval);
-          this.isButtonDisabled = false;
+        // 窗口大小调整时重新计算框架高度
+        window.onresize = () => {
+            this.changeFrameHeight();
         }
-      }, 10);
+    },
+    created() {
+
+    },
+    methods: {
+        sendQuestion() {
+            this.isInputDisabled = true;
+            this.isButtonDisabled = true;
+            this.chatMessages.push({ role: 'user', text: this.question });
+            console.log('发送的问题:', this.question);
+            this.chatMessages.push({ role: 'bot', text: '.' });
+            this.startTypingEffect();
+
+            sendQuestion(this.question).then(response => {
+                this.question = '';
+                this.isInputDisabled = false;
+                this.stopTypingEffect();
+                this.chatMessages[this.chatMessages.length - 1].text = '';
+                this.displayBotMessage(response.ans);
+            })
+        },
+
+        // 启动动态“...”效果
+        startTypingEffect() {
+            let dotCount = 1;
+            this.typingInterval = setInterval(() => {
+                const botMessage = this.chatMessages[this.chatMessages.length - 1];
+                if (dotCount < 3) {
+                    botMessage.text += '.';
+                    dotCount++;
+                } else {
+                    botMessage.text = '.';
+                    dotCount = 1;
+                }
+            }, 500);
+        },
+
+        // 停止动态“...”效果
+        stopTypingEffect() {
+            if (this.typingInterval) {
+                clearInterval(this.typingInterval);
+                this.typingInterval = null;
+            }
+        },
+
+        // 显示 Bot 消息的打字效果
+        displayBotMessage(message) {
+            let index = 0;
+            const fullMessage = message;
+            const botMessage = this.chatMessages[this.chatMessages.length - 1];
+
+            // 设置定时器逐个字符显示
+            const typingInterval = setInterval(() => {
+                botMessage.text += fullMessage.charAt(index);  // 逐个字符添加到消息中
+                index++;
+
+                if (index === fullMessage.length) {
+                    clearInterval(typingInterval);
+                    this.isButtonDisabled = false;
+                }
+            }, 10);
+        },
+
+        // 监听键盘事件
+        handleKeyDown(event) {
+            // 如果按下 Shift + Enter 就插入换行符
+            if (event.key === 'Enter' && event.shiftKey) {
+                return;
+            }
+
+            // 如果按下 Enter 键
+            if (event.keyCode === 13 && !event.shiftKey) {
+                event.cancelBubble = true;
+                event.stopPropagation();
+                event.preventDefault();
+                if (!this.isButtonDisabled)
+                    this.sendQuestion();
+            }
+        },
+
+        // 获取选中的文本
+        getSelectedText() {
+            const iframe = document.getElementById('iframe');
+            let x = '';
+            let y = '';
+            let _x = '';
+            let _y = '';
+
+            iframe.onload = () => {
+                // 鼠标点击监听
+                iframe.contentDocument.addEventListener('mousedown', (e) => {
+                    this.selectedText = '';
+                    this.translatedText = '';
+                    this.tooltipStyle.display = 'none';
+                    x = e.pageX;
+                    y = e.pageY;
+                }, true);
+
+                // 鼠标抬起监听
+                iframe.contentDocument.addEventListener('mouseup', (e) => {
+                    _x = e.pageX;
+                    _y = e.pageY;
+                    if (x === _x && y === _y) return; // 如果点击和抬起位置相同，则视为没有选中
+
+                    this.tooltipStyle.display = 'block';
+                    this.tooltipStyle.top = `${_y + 20}px`;
+                    this.tooltipStyle.left = `${_x + 20}px`;
+
+                    let choose = iframe.contentWindow.getSelection().toString();
+                    this.selectedText = choose.replace(/[\r\n]/g, " ");
+                    console.log(this.selectedText);
+                    this.translateText(this.selectedText);
+                }, true);
+            };
+        },
+
+        // 改变iframe高度
+        changeFrameHeight() {
+            let iframe = document.getElementById("iframe");
+            iframe.height = document.documentElement.clientHeight;
+        },
+
+        // 翻译文本
+        translateText(text) {
+            let appid = '20241230002241792';
+            let secretkey = 'ly0fKph1cR04HNQJrCFP';
+            let from = 'en';
+            let to = 'zh';
+            let salt = Date.parse(new Date()) / 1000;
+            let sign = md5(appid + text + salt + secretkey);
+            let url2 = '/baiduapi';
+
+            axios({
+                headers: {
+                    "Content-Type": 'application/x-www-form-urlencoded',
+                },
+                data: {
+                    q: text,
+                    from: from,
+                    to: to,
+                    appid: appid,
+                    salt: salt,
+                    sign: sign
+                },
+                method: 'POST',
+                url: url2,
+            }).then((data) => {
+                console.log(data);
+                this.translatedText = data.data.trans_result[0].dst;
+                console.log(this.translatedText);
+            }).catch((resp) => console.warn(resp));
+        }
     },
 
-    // 监听键盘事件
-    handleKeyDown(event) {
-      // 如果按下 Shift + Enter 就插入换行符
-      if (event.key === 'Enter' && event.shiftKey) {
-        return;
-      }
-
-      // 如果按下 Enter 键
-      if (event.keyCode === 13 && !event.shiftKey) {
-        event.cancelBubble = true;
-        event.stopPropagation();
-        event.preventDefault();
-        if (!this.isButtonDisabled)
-          this.sendQuestion();
-      }
-    },
-  },
-  components:{
-    pdf
-  }
 }
 </script>
 
