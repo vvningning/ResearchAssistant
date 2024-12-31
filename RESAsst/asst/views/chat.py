@@ -1,12 +1,13 @@
+import json
 import langid
 from django.http import JsonResponse
-from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pymilvus import connections, Collection
 
+from asst.models import ChatHistory
 from asst.services.Embedding import get_embq_embedding, parser_Message, get_embp_embedding
-from asst.services.SparkChat import get_ans
+from asst.services.SparkChat import get_ans, init_messages
 
 APPID = '9b60d12e'
 APISecret = 'ZTUwYzNlZGNjMDhmNGQ5NDVjYThiZGEy'
@@ -21,7 +22,7 @@ def chat(request):
     language = langid.classify(question)[0]
     top_k = 5
     retrieval = retriever_qa(question, top_k, paper_id)
-    prompt = f'Based on the following materials, answer the question. If the materials are insufficient, reply "I don’t know". Here are the materials:\n'
+    prompt = f'Based on the following materials, answer the question. If the materials are insufficient, reply "I don\'t know". Here are the materials:\n'
     if language == 'zh':
         prompt = f'基于下面给出的资料，回答问题。如果资料不足，回答不了，就回复不知道，下面是资料：\n'
     for idx, content in enumerate(retrieval):
@@ -31,7 +32,11 @@ def chat(request):
     else:
         prompt += f'Here are the question:{question}'
     print(prompt)
-    response['ans'] = get_ans(prompt)
+    response['ans'] = get_ans(request, prompt)
+    user_log = ChatHistory(eid=paper_id, isUser=True, message=question)
+    user_log.save()
+    bot_log = ChatHistory(id=user_log.msgId+1, eid=paper_id, isUser=False, meseage=response['ans'])
+    bot_log.save()
     return JsonResponse(response)
 
 
@@ -66,6 +71,34 @@ def retriever_qa(query, top_k, paper_id):
     return retrieval
 
 
+def show_history(request):
+    paper_id = request.GET.get('paper_id')
+    histories = ChatHistory.objects.filter(eid=paper_id)
+    init_messages(request, histories)
+    messages = []
+    for history in histories:
+        if history.isUser:
+            messages.append({'role': 'user', 'text': history.message})
+        else:
+            messages.append({'role': 'bot', 'text': history.message})
+    response = {'msg': messages}
+    return JsonResponse(response)
+
+
+@csrf_exempt
+def clear_chat(request):
+    if request.method == 'POST':
+        data = json.loads(request.body.decode('utf-8'))
+        paper_id = data.get('paper_id')
+        if paper_id:
+            ChatHistory.objects.filter(eid=paper_id).delete()
+            request.session['history'] = []
+            return JsonResponse({'status': 'success', 'message': '聊天记录已清空'})
+        else:
+            return JsonResponse({'status': 'error', 'message': '缺少 paper_id 参数'})
+    return JsonResponse({'status': 'error', 'message': '请求方法不正确'})
+
+
 # 向量数据库插入
 def insert_collection(paper_id, content):
     text_splitter = RecursiveCharacterTextSplitter(
@@ -81,5 +114,3 @@ def insert_collection(paper_id, content):
         res = get_embp_embedding(desc, appid=APPID, apikey=APIKEY, apisecret=APISecret)
         vector = parser_Message(res)
         collection.insert([{"paper_id": paper_id, "embedding": vector, "text": document.page_content}])
-
-# @csrf_exempt 如果是post加个这个

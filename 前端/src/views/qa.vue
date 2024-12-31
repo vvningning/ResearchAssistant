@@ -70,7 +70,7 @@
 
 <script>
 import {
-  sendQuestion
+  sendQuestion, showChatHistory, clearChat
 } from '../api/chat'
 import pdf from "vue-pdf"
 
@@ -87,9 +87,15 @@ export default {
     }
   },
   created() {
-
+    this.showChatHistory();
   },
   methods: {
+    showChatHistory() {
+      showChatHistory(this.$route.query.eid).then(response => {
+        this.chatMessages = response.msg;
+      })
+    },
+
     sendQuestion() {
       if (!this.question.trim()) {
         console.warn("输入内容不得为空");
@@ -170,15 +176,23 @@ export default {
     },
 
     clearChat() {
-      if (this.chatMessages.length === 0)
-        return ;
+      if (this.chatMessages.length === 0) return;
+
       this.$confirm('您确定要清空聊天记录吗?', '确认清空', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning',
       }).then(() => {
-        this.chatMessages = [];
-        })
+        clearChat(this.$route.query.eid).then(response => {
+          if (response.status === 'success') {
+            this.chatMessages = [];
+          } else {
+            this.$message.error('删除失败：' + response.message);
+          }
+        }).catch(error => {
+          this.$message.error('请求失败：' + error.message);
+        });
+      });
     },
 
     handleCommand(command) {
