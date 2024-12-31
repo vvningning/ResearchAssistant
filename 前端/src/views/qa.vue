@@ -2,19 +2,14 @@
   <div class="container">
     <div class="left-panel">
       <el-card style="width: 100%; height: 20%">
-        <div style="display: flex; width: 100%;height: 100%">
+        <div style="display: flex; width: 100%; height: 100%">
           论文关键词
           <p>{{ keywords }}</p>
         </div>
       </el-card>
       <el-card style="width: 100%; height: 80%; margin-top: 10px">
         <div style="display: flex; width: 100%;height: 100%">
-          <iframe
-              :src="fileUrl"
-              id="iframeBox"
-              ref="iframeRef"
-              style="width: 100%; height: 800px"
-          ></iframe>
+          <iframe :src="fileUrl" id="iframeBox" ref="iframeRef" style="width: 100%; height: 800px"></iframe>
           <p>{{ content }}</p>
         </div>
       </el-card>
@@ -22,19 +17,39 @@
     <div class="right-panel">
       <div style="display: flex; flex-direction: column; height: 100%">
         <!-- 聊天记录部分 -->
-        <el-card class="chat-card">
+        <el-card class="chat-card" style="position: relative;">
+          <div style="position: absolute; right: 15px; top: 0">
+            <el-dropdown @command="handleCommand" trigger="click" :dropdown-append-to-body="true">
+              <el-button type="text">
+                <img src="../assets/images/more.png" alt="更多功能" width="20" />
+              </el-button>
+              <template #dropdown>
+                <el-dropdown-menu style="white-space: nowrap;">
+                  <el-dropdown-item command="clear" style="display: flex; align-items: center;">
+                    <img src="../assets/images/clearMsg.png" alt="清空聊天" height="20" style="margin-right: 10px" />
+                    清空聊天内容
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
+
+          <div style="margin-bottom: 15px"></div>
+
           <div v-for="(message, index) in chatMessages" :key="index" class="chat-message">
             <!-- 用户消息 -->
             <div v-if="message.role === 'user'" class="message" style="justify-content: flex-end;">
               <div class="message-user">
                 {{ message.text }}
               </div>
-              <img src="../assets/images/user.png" width="30" style="margin-left: 5px; transform: translateY(20%);" alt="user" />
+              <img src="../assets/images/user.png" width="30" style="margin-left: 5px; transform: translateY(20%);"
+                alt="user" />
             </div>
 
             <!-- Bot 消息 -->
             <div v-else class="message">
-              <img src="../assets/images/bot.png" width="30" style="margin-right: 5px; transform: translateY(20%);" alt="bot" />
+              <img src="../assets/images/bot.png" width="30" style="margin-right: 5px; transform: translateY(20%);"
+                alt="bot" />
               <div class="message-bot">
                 {{ message.text }}
               </div>
@@ -42,7 +57,8 @@
           </div>
         </el-card>
         <div style="display: flex; margin-top: 10px">
-          <el-input style="margin-right: 10px" v-model="question" type="textarea" placeholder="请输入问题，按 Shift+Enter 换行" @keydown="handleKeyDown" :disabled="isInputDisabled" />
+          <el-input style="margin-right: 10px" v-model="question" type="textarea" placeholder="请输入问题，按 Shift+Enter 换行"
+            @keydown="handleKeyDown" :disabled="isInputDisabled" />
           <el-button type="primary" @click="sendQuestion" :disabled="isButtonDisabled">发送</el-button>
         </div>
       </div>
@@ -216,7 +232,7 @@ export default {
             let to = 'zh';
             let salt = Date.parse(new Date()) / 1000;
             let sign = md5(appid + text + salt + secretkey);
-            let url2 = '/baiduapi';
+            let url2 = '/api';
 
             axios({
                 headers: {
@@ -244,60 +260,70 @@ export default {
 </script>
 
 <style scoped>
-  .container {
-    display: flex;
-    padding: 20px;
-    height: 1000px;
-  }
+.container {
+  display: flex;
+  padding: 20px;
+  height: 1000px;
+}
 
-  .left-panel {
-    width: 65%;
-    padding-right: 20px;
-  }
+.left-panel {
+  width: 65%;
+  padding-right: 20px;
+}
 
-  .right-panel {
-    width: 35%;
-    border-left: 1px solid #ccc;
-    padding-left: 20px;
-  }
+.right-panel {
+  width: 35%;
+  border-left: 1px solid #ccc;
+  padding-left: 20px;
+}
 
-  .chat-card {
-    width: 100%;
-    height: 100%;
-    overflow-y: auto;
-    padding: 15px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
+.chat-card {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  padding: 5px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
 
-  .chat-message {
-    margin-bottom: 15px;
-  }
+.chat-message {
+  margin-bottom: 15px;
+}
 
-  .message {
-    display: flex;
-    align-items: flex-start;
-    margin-bottom: 15px;
-  }
+.message {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
 
-  .message-user {
-    font-weight: bold;
-    font-size: 14px;
-    padding: 10px;
-    color: #4a90e2;
-    text-align: right;
-    white-space: pre-line;
-    word-break: break-word;
-    word-wrap: break-word;
-  }
+.message-user {
+  padding: 10px;
+  color: #003472;
+  max-width: 80%;
+  text-align: left;
+  white-space: pre-line;
+  word-break: break-word;
+  word-wrap: break-word;
+}
 
-  .message-bot {
-    padding: 10px;
-    background-color: #e9e9e9;
-    border-radius: 8px;
-    max-width: 80%;
-    text-align: left;
-    white-space: pre-line;
-    word-break: break-word;
-    word-wrap: break-word;
-  }
+.message-bot {
+  padding: 10px;
+  background-color: #e9e9e9;
+  border-radius: 8px;
+  max-width: 80%;
+  text-align: left;
+  white-space: pre-line;
+  word-break: break-word;
+  word-wrap: break-word;
+}
+
+.tooltip {
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 14px;
+  z-index: 10;
+  width: 200px;
+}
 </style>

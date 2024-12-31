@@ -1,9 +1,9 @@
 import request from '@/utils/request'
 
-export function sendQuestion(question) {
+export function sendQuestion(question, paper_id) {
     return request({
         url: '/chat/',
         method: 'get',
-        params: { question }
+        params: { question, paper_id }
     })
 }
