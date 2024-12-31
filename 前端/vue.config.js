@@ -1,7 +1,6 @@
 // 跨域配置
 //让浏览器能从8080端口访问到9090端口
 module.exports = {
-    transpileDependencies: true,
     devServer: {                //记住，别写错了devServer//设置本地默认端口  选填
         port: 8080,
         proxy: {                 //设置代理，必须填

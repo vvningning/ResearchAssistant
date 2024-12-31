@@ -86,7 +86,7 @@ export default {
       isButtonDisabled: false,
       typingInterval: null,
 
-      pdfPath: '/pdf/GraphGPT.pdf',
+      fileUrl: "../pdf/test.pdf",
       selectedText: '',
       translatedText: '',
       tooltipStyle: {
