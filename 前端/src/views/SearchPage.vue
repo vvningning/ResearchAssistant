@@ -64,8 +64,8 @@ export default {
       } else {
         request.get("/strmatch/", {
           params: {
-            //以后改成从sessions获取
-            username: 'user1',
+
+            username: this.$route.query.username,
             keyword: this.keyword,
           }
         }).then((response) => {
@@ -75,8 +75,8 @@ export default {
         })
         request.get("/bm25/", {
           params: {
-            //以后改成从sessions获取
-            username: 'user1',
+
+            username: this.$route.query.username,
             keyword: this.keyword,
           }
         }).then((response) => {
