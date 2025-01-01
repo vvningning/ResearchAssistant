@@ -9,13 +9,12 @@
       </el-card>
       <el-card style="width: 100%; height: 80%; margin-top: 10px">
         <div style="display: flex; width: 100%;height: 100%">
-          <iframe
-              :src="fileUrl"
-              id="iframeBox"
-              ref="iframeRef"
-              style="width: 100%; height: 800px"
-          ></iframe>
-          <p>{{ content }}</p>
+          <iframe id="iframe" name="iframe" height="100%" width="100%"
+            :src="`/pdfUtils/web/viewer.html?file=${pdfPath}`" scrolling="auto" frameborder="0">
+          </iframe>
+          <div v-if="selectedText" class="tooltip" :style="tooltipStyle">
+            <span>{{ translatedText }}</span>
+          </div>
         </div>
       </el-card>
     </div>
@@ -72,7 +71,6 @@
 import {
   sendQuestion, showChatHistory, clearChat
 } from '../api/chat'
-import pdf from "vue-pdf"
 import axios from 'axios'
 import md5 from 'js-md5'
 
@@ -86,7 +84,7 @@ export default {
       isButtonDisabled: false,
       typingInterval: null,
 
-      fileUrl: "../pdf/test.pdf",
+      pdfPath: "/pdf/GraphGPT.pdf",
       selectedText: '',
       translatedText: '',
       tooltipStyle: {
@@ -246,8 +244,8 @@ export default {
           if (x === _x && y === _y) return; // 如果点击和抬起位置相同，则视为没有选中
 
           this.tooltipStyle.display = 'block';
-          this.tooltipStyle.top = `${_y + 20}px`;
-          this.tooltipStyle.left = `${_x + 20}px`;
+          this.tooltipStyle.top = `${_y + 320}px`;
+          this.tooltipStyle.left = `${_x + 320}px`;
 
           let choose = iframe.contentWindow.getSelection().toString();
           this.selectedText = choose.replace(/[\r\n]/g, " ");
@@ -271,7 +269,7 @@ export default {
       let to = 'zh';
       let salt = Date.parse(new Date()) / 1000;
       let sign = md5(appid + text + salt + secretkey);
-      let url2 = '/api';
+      let url2 = '/baiduapi';
 
       axios({
         headers: {
@@ -295,7 +293,6 @@ export default {
     }
   },
   components:{
-    pdf
   }
 }
 </script>
