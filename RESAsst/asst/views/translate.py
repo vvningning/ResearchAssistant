@@ -3,8 +3,10 @@ import hashlib
 import random
 import json
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 
+@csrf_exempt
 def translate(request):
     data = json.loads(request.body)
     text = data['text']
