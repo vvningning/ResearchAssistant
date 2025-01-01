@@ -105,7 +105,7 @@ export default {
     }
   },
   created() {
-    // this.showChatHistory();
+    this.showChatHistory();
   },
   methods: {
     showChatHistory() {
