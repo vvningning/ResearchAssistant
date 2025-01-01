@@ -74,8 +74,8 @@ export default {
           if (x === _x && y === _y) return; // 如果点击和抬起位置相同，则视为没有选中
 
           this.tooltipStyle.display = 'block';
-          this.tooltipStyle.top = `${_y + 20}px`;
-          this.tooltipStyle.left = `${_x + 20}px`;
+          this.tooltipStyle.top = `${_y + 100}px`;
+          this.tooltipStyle.left = `${_x + 320}px`;
 
           let choose = iframe.contentWindow.getSelection().toString();
           this.selectedText = choose.replace(/[\r\n]/g, " ");
