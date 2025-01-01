@@ -25,6 +25,8 @@
 <script>
 import axios from 'axios'
 import md5 from 'js-md5'
+import request from '@/utils/request'
+
 export default {
   data() {
     return {
@@ -51,7 +53,7 @@ export default {
   methods: {
     // 获取选中的文本
     getSelectedText() {
-      const iframe = document.getElementById('iframe');
+      const iframe = document.getElementById("iframe");
       let x = '';
       let y = '';
       let _x = '';
@@ -93,33 +95,17 @@ export default {
 
     // 翻译文本
     translateText(text) {
-      let appid = '20241230002241792';
-      let secretkey = 'ly0fKph1cR04HNQJrCFP';
-      let from = 'en';
-      let to = 'zh';
-      let salt = Date.parse(new Date()) / 1000;
-      let sign = md5(appid + text + salt + secretkey);
-      let url2 = '/baiduapi';
-
-      axios({
-        headers: {
-          "Content-Type": 'application/x-www-form-urlencoded',
-        },
-        data: {
-          q: text,
-          from: from,
-          to: to,
-          appid: appid,
-          salt: salt,
-          sign: sign
-        },
+      request({
+        url: '/translate/',
         method: 'POST',
-        url: url2,
+        data: {
+          text: text
+        }
       }).then((data) => {
-        console.log(data);
-        this.translatedText = data.data.trans_result[0].dst;
-        console.log(this.translatedText);
-      }).catch((resp) => console.warn(resp));
+        console.log(data)
+        this.translatedText = data.trans_result[0].dst;
+        console.log(this.translatedText)
+      }).catch((resp) => console.warn(resp))
     }
   }
 }
