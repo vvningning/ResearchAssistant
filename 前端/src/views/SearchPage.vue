@@ -18,7 +18,7 @@
       <el-col :span="12">
         <div v-if="leftResultList.length !== 0 || rightResultList.length !== 0">
           <el-divider class="res-divider" content-position="left">字符串匹配检索结果</el-divider>
-          <result-card v-for="(result, index) in leftResultList"
+          <result-card v-for="(result, index) in leftResultListShow"
                        :data="result"
                        :key="index"
                        class="result-card">
@@ -29,13 +29,21 @@
       <el-col :span="12">
         <div v-if="leftResultList.length !== 0 || rightResultList.length !== 0">
           <el-divider class="res-divider" content-position="left">BM25检索结果</el-divider>
-          <result-card v-for="(result, index) in rightResultList"
+          <result-card v-for="(result, index) in rightResultListShow"
                        :data="result"
                        :key="index"
                        class="result-card">
           </result-card>
         </div>
       </el-col>
+      <el-pagination v-if="leftResultList.length !== 0 || rightResultList.length !== 0"
+          @current-change="pageChange"
+          v-model:current-page="page"
+          :page-size="pageSize"
+          layout="prev, pager, next, jumper"
+          :total="totalEntry"
+          style="margin: 20px">
+      </el-pagination>
     </el-row>
   </div>
 </template>
@@ -43,6 +51,7 @@
 <script>
 import ResultCard from "@/views/ResultCard";
 import request from "@/utils/request";
+
 
 export default {
   name: "SearchPage",
@@ -53,7 +62,12 @@ export default {
     return {
       keyword: '',
       leftResultList: [],
-      rightResultList: []
+      rightResultList: [],
+      leftResultListShow: [],
+      rightResultListShow: [],
+      page: 1,
+      pageSize: 3,
+      totalEntry: 0,
     }
   },
   methods: {
@@ -64,28 +78,36 @@ export default {
       } else {
         request.get("/strmatch/", {
           params: {
-
             username: this.$route.query.username,
             keyword: this.keyword,
           }
         }).then((response) => {
           this.leftResultList = response
+          this.page = 1
+          this.totalEntry = Math.max(this.leftResultList.length, this.rightResultList.length)
+          this.pageChange()
         }).catch(() => {
           this.$messageBox.error("服务器错误")
         })
         request.get("/bm25/", {
           params: {
-
             username: this.$route.query.username,
             keyword: this.keyword,
           }
         }).then((response) => {
           this.rightResultList = response
+          this.page = 1
+          this.totalEntry = Math.max(this.leftResultList.length, this.rightResultList.length)
+          this.pageChange()
         }).catch(() => {
           this.$messageBox.error("服务器错误")
         })
       }
     },
+    pageChange() {
+      this.leftResultListShow = this.leftResultList.slice((this.page-1) * this.pageSize,this.page * this.pageSize)
+      this.rightResultListShow = this.rightResultList.slice((this.page-1) * this.pageSize,this.page * this.pageSize)
+    }
   }
 }
 
@@ -96,7 +118,6 @@ export default {
   position: relative;
   margin-top: 20px;
   width: 80%;
-  //left: 10%;
 }
 
 .result-card {
