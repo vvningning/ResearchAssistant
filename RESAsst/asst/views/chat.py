@@ -114,3 +114,10 @@ def insert_collection(paper_id, content):
         res = get_embp_embedding(desc, appid=APPID, apikey=APIKEY, apisecret=APISecret)
         vector = parser_Message(res)
         collection.insert([{"paper_id": paper_id, "embedding": vector, "text": document.page_content}])
+
+
+# 向量数据库插入
+def delete_collection(paper_id):
+    collection = Collection("paper_collection")
+    collection.load()
+    collection.delete(expr=f"paper_id == {paper_id}")

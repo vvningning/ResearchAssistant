@@ -71,8 +71,6 @@
 import {
   sendQuestion, showChatHistory, clearChat
 } from '../api/chat'
-import axios from 'axios'
-import md5 from 'js-md5'
 import request from '@/utils/request'
 
 export default {
@@ -120,6 +118,13 @@ export default {
         console.warn("输入内容不得为空");
         return;
       }
+
+      if (this.question.length > 7000) {
+        console.warn("输入内容超长");
+        this.$message.error("输入内容超长");
+        return;
+      }
+
       this.isInputDisabled = true;
       this.isButtonDisabled = true;
       this.chatMessages.push({role: 'user', text: this.question});
