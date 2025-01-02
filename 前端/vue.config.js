@@ -10,7 +10,14 @@ module.exports = {
                 pathRewrite: {                   //路径重写
                     '/api': ''                     //选择忽略拦截器里面的单词
                 }
-            }
+            },
+            '/baiduapi': {
+                target: 'http://api.fanyi.baidu.com/api/trans/vip/translate',  // 目标地址
+                changeOrigin: true,  // 是否改变原始请求头中的Host字段
+                pathRewrite: {
+                    '^/baiduapi': '',  // 重写路径：将 /api 去掉
+                },
+            },
         }
     }
 }
