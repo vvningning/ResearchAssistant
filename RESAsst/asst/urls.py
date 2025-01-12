@@ -12,7 +12,7 @@ urlpatterns = [
     path('login/', views.login),
     path('sendVerification/', views.sendVerification),
     path('register/', views.register),
-    path('translate/', views.translate)
+    path('translate/', views.translate),
     path('get_nodes_list/', views.get_nodes_list, name='get_nodes_list'),
     path('post_selected_node/', views.post_selected_node, name='post_selected_node'),
     path('post_new_folder/', views.post_new_folder, name='post_new_folder'),

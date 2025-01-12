@@ -1,26 +1,26 @@
-from django.http import JsonResponse
-from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
 import json
-import mysql.connector
-import PyPDF2
 import os
 import shutil
-import tkinter as tk
 from tkinter import filedialog
 
-#用来存储当前最大的eid（这里不考虑回收使用）
-current_max_eid = 10
-#是从前端还是从后端获取
-username = "user1"
-#相对路径"../pdf/test.pdf"要以/结尾
-store_path =  "C:/code_space/search_assistant/前端/public/pdf"
+import PyPDF2
+import mysql.connector
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
-#cursor = None
+# 用来存储当前最大的eid（这里不考虑回收使用）
+current_max_eid = 10
+# 是从前端还是从后端获取
+username = "user1"
+# 相对路径"../pdf/test.pdf"要以/结尾
+store_path = "C:/code_space/search_assistant/前端/public/pdf"
+
+
+# cursor = None
 
 def get_nodes_list(request):
     global username
-    #print(request.GET.get('username'))
+    # print(request.GET.get('username'))
     # data = [
     #     {"name": "node1", "type": "folder", "path": "/1"},
     #     {"name": "node2", "type": "document", "path": "/1/2"},
@@ -29,7 +29,7 @@ def get_nodes_list(request):
     # ]
     db = mysql.connector.connect(
         host="localhost",  # MySQL服务器地址
-        user="root",   # 用户名
+        user="root",  # 用户名
         password="123456",  # 密码
         database="asst"  # 数据库名称
     )
@@ -46,18 +46,19 @@ def get_nodes_list(request):
         data.append({"name": node_name, "type": type_, "path": path})
     return JsonResponse(data, safe=False)
 
+
 # 依据eid查询节点的path
 def eid_to_path(eid):
     db = mysql.connector.connect(
         host="localhost",  # MySQL服务器地址
-        user="root",   # 用户名
+        user="root",  # 用户名
         password="123456",  # 密码
         database="asst"  # 数据库名称
     )
     cursor = db.cursor()
     # eid int类型，本节点的eid
     select_sql = "SELECT path FROM tree WHERE eid = %s"
-    cursor.execute(select_sql, (eid, ))
+    cursor.execute(select_sql, (eid,))
     result = cursor.fetchone()  # 获取一条记录
     if result:
         path = result[0]
@@ -66,11 +67,13 @@ def eid_to_path(eid):
         path = None
         print("未找到记录。")
     return path
+
+
 # 转化path格式
 def replace_eid_with_name(path):
     db = mysql.connector.connect(
         host="localhost",  # MySQL服务器地址
-        user="root",   # 用户名
+        user="root",  # 用户名
         password="123456",  # 密码
         database="asst"  # 数据库名称
     )
@@ -91,18 +94,19 @@ def replace_eid_with_name(path):
     new_path = '/' + '/'.join(names)
     return new_path
 
+
 # 依据path查询节点的eid
 def path_to_eid(path):
     db = mysql.connector.connect(
         host="localhost",  # MySQL服务器地址
-        user="root",   # 用户名
+        user="root",  # 用户名
         password="123456",  # 密码
         database="asst"  # 数据库名称
     )
     cursor = db.cursor()
     # path str类型，本节点的path
     select_sql = "SELECT eid FROM tree WHERE path = %s"
-    cursor.execute(select_sql, (path, ))
+    cursor.execute(select_sql, (path,))
     result = cursor.fetchone()  # 获取一条记录
     if result:
         eid = result[0]
@@ -111,7 +115,9 @@ def path_to_eid(path):
         eid = None
         print("未找到记录。")
     return eid
-#只用来拿到path，暂时不加和数据库比对
+
+
+# 只用来拿到path，暂时不加和数据库比对
 @csrf_exempt
 def post_selected_node(request):
     if request.method == 'POST':
@@ -119,15 +125,16 @@ def post_selected_node(request):
         path = data.get('node_path')
         print(path)
         if path:
-            return  JsonResponse({'status': 'success', 'message': 'get_the_path'})
+            return JsonResponse({'status': 'success', 'message': 'get_the_path'})
         else:
-            return  JsonResponse({'status': 'error', 'message': 'lose_the_path'})
+            return JsonResponse({'status': 'error', 'message': 'lose_the_path'})
     return JsonResponse({'status': 'error', 'message': '请求方法不正确'})
+
 
 def creat_folder_node(path, name, username):
     db = mysql.connector.connect(
         host="localhost",  # MySQL服务器地址
-        user="root",   # 用户名
+        user="root",  # 用户名
         password="123456",  # 密码
         database="asst"  # 数据库名称
     )
@@ -136,14 +143,15 @@ def creat_folder_node(path, name, username):
     # name str类型，本节点的name
     global current_max_eid
     if path is None:
-        new_path = f"/{current_max_eid+1}"
+        new_path = f"/{current_max_eid + 1}"
     else:
-        new_path = f"{path}/{current_max_eid+1}"
-    #print(new_path)
-    cursor.execute('INSERT INTO tree VALUES (%s, %s, %s, %s, %s, %s)', (current_max_eid+1, name, "folder", new_path, None, username))
+        new_path = f"{path}/{current_max_eid + 1}"
+    # print(new_path)
+    cursor.execute('INSERT INTO tree VALUES (%s, %s, %s, %s, %s, %s)',
+                   (current_max_eid + 1, name, "folder", new_path, None, username))
     db.commit()
-    current_max_eid = current_max_eid+1
-    folder_path = store_path+replace_eid_with_name(new_path)
+    current_max_eid = current_max_eid + 1
+    folder_path = store_path + replace_eid_with_name(new_path)
     print(folder_path)
     try:
         os.makedirs(folder_path, exist_ok=True)  # 如果文件夹已存在则不会报错
@@ -151,7 +159,9 @@ def creat_folder_node(path, name, username):
     except Exception as e:
         print(f"创建文件夹失败: {e}")
     return new_path
-#参数为父路径+节点名，需要返回一个本节点路径
+
+
+# 参数为父路径+节点名，需要返回一个本节点路径
 @csrf_exempt
 def post_new_folder(request):
     global username
@@ -161,19 +171,20 @@ def post_new_folder(request):
         parts = message.split('+')
         path = parts[0]
         name = parts[1]
-        #插入节点到数据库
+        # 插入节点到数据库
         new_path = creat_folder_node(path, name, username)
-        #print(path)
+        # print(path)
         if path:
-            return  JsonResponse({'status': 'success', 'message': new_path})
+            return JsonResponse({'status': 'success', 'message': new_path})
         else:
-            return  JsonResponse({'status': 'error', 'message': 'lose_the_message'})
+            return JsonResponse({'status': 'error', 'message': 'lose_the_message'})
     return JsonResponse({'status': 'error', 'message': '请求方法不正确'})
+
 
 def creat_pdf_node(fpath, cpath, username):
     db = mysql.connector.connect(
         host="localhost",  # MySQL服务器地址
-        user="root",   # 用户名
+        user="root",  # 用户名
         password="123456",  # 密码
         database="asst"  # 数据库名称
     )
@@ -192,14 +203,15 @@ def creat_pdf_node(fpath, cpath, username):
         text += page.extract_text()
     pdf_file.close()
     filename = os.path.basename(cpath)
-    #print(filename)
-    #filename = cpath.rsplit('\\', 1)[-1]
-    new_path = f"{fpath}/{current_max_eid+1}"  # 构建新的 path
-    #print(new_path)
-    cursor.execute('INSERT INTO tree VALUES (%s, %s, %s, %s, %s, %s)', (current_max_eid+1, filename, "pdf", new_path, text, username))
+    # print(filename)
+    # filename = cpath.rsplit('\\', 1)[-1]
+    new_path = f"{fpath}/{current_max_eid + 1}"  # 构建新的 path
+    # print(new_path)
+    cursor.execute('INSERT INTO tree VALUES (%s, %s, %s, %s, %s, %s)',
+                   (current_max_eid + 1, filename, "pdf", new_path, text, username))
     db.commit()
-    current_max_eid = current_max_eid+1
-    document_path = store_path+replace_eid_with_name(new_path)
+    current_max_eid = current_max_eid + 1
+    document_path = store_path + replace_eid_with_name(new_path)
     print(document_path)
     try:
         # 复制文件到目标路径
@@ -208,32 +220,35 @@ def creat_pdf_node(fpath, cpath, username):
     except Exception as e:
         print(f"上传文件时发生错误: {e}")
     return new_path
-#参数为父路径，需要返回一个本节点路径+节点名
+
+
+# 参数为父路径，需要返回一个本节点路径+节点名
 @csrf_exempt
 def post_new_document(request):
     global username
     if request.method == 'POST':
         data = json.loads(request.body.decode('utf-8'))
         path = data.get('active_document_path')
-        #print(path)
+        # print(path)
         pdf_file_path = filedialog.askopenfilename(title="选择PDF文件", filetypes=[("PDF files", "*.pdf")])
         if pdf_file_path:
             new_path = creat_pdf_node(path, pdf_file_path, username)
         # 获取文件名,保留4位
         file_name = os.path.basename(pdf_file_path)
         first_four_chars = file_name[:4]
-        message = new_path+'+'+first_four_chars
+        message = new_path + '+' + first_four_chars
         if path:
-            return  JsonResponse({'status': 'success', 'message': message})
+            return JsonResponse({'status': 'success', 'message': message})
         else:
-            return  JsonResponse({'status': 'error', 'message': 'lose_the_path'})
+            return JsonResponse({'status': 'error', 'message': 'lose_the_path'})
     return JsonResponse({'status': 'error', 'message': '请求方法不正确'})
+
 
 # 删除此节点以及其所有子节点，返回父节点路径
 def delete_node(path):
     db = mysql.connector.connect(
         host="localhost",  # MySQL服务器地址
-        user="root",   # 用户名
+        user="root",  # 用户名
         password="123456",  # 密码
         database="asst"  # 数据库名称
     )
@@ -249,16 +264,16 @@ def delete_node(path):
         e1.path = %s 
         AND e2.path LIKE concat( e1.path, '/%' );
     """
-    cursor.execute(query, (path, ))
+    cursor.execute(query, (path,))
     results = cursor.fetchall()
-    #print(results)
+    # print(results)
     if results:
         eids_to_delete = [eid[0] for eid in results]  # 提取 eid
         ceid = path_to_eid(path)  # 当前节点 eid
         eids_to_delete.append(ceid)
         print(f"将要删除的节点的 ID: {eids_to_delete}")
         delete_query = "DELETE FROM tree WHERE eid IN (%s)" % ','.join(['%s'] * len(eids_to_delete))
-        cursor.execute(delete_query, eids_to_delete)    
+        cursor.execute(delete_query, eids_to_delete)
         # 提交更改
         db.commit()
         print(f"已成功删除 {cursor.rowcount} 条记录")
@@ -272,6 +287,8 @@ def delete_node(path):
         cursor.execute("DELETE FROM tree WHERE path = %s", (path,))
         db.commit()
         print("已成功删除1条记录")
+
+
 def delete_path(node_path):
     if os.path.isfile(node_path):
         try:
@@ -287,19 +304,21 @@ def delete_path(node_path):
             print(f"Error deleting directory {node_path}: {e}")
     else:
         print(f"Path does not exist: {node_path}")
-#参数为节点路径，加入删除当前节点和所有子节点的逻辑
+
+
+# 参数为节点路径，加入删除当前节点和所有子节点的逻辑
 @csrf_exempt
 def post_deleted_node(request):
     if request.method == 'POST':
         data = json.loads(request.body.decode('utf-8'))
         path = data.get('node_path')
-        node_path = store_path+replace_eid_with_name(path)
+        node_path = store_path + replace_eid_with_name(path)
         delete_node(path)
         print(node_path)
         delete_path(node_path)
-        #print(path)
+        # print(path)
         if path:
-            return  JsonResponse({'status': 'success', 'message': 'get_the_path'})
+            return JsonResponse({'status': 'success', 'message': 'get_the_path'})
         else:
-            return  JsonResponse({'status': 'error', 'message': 'lose_the_path'})
+            return JsonResponse({'status': 'error', 'message': 'lose_the_path'})
     return JsonResponse({'status': 'error', 'message': '请求方法不正确'})
