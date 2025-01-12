@@ -14,7 +14,7 @@ class Build(models.Model):
     type = models.CharField(max_length=100, verbose_name='文件类型')
     path = models.CharField(max_length=200, verbose_name='文件路径')
     content = models.TextField(verbose_name='文件内容')
-    username = models.ForeignKey(User, to_field='username', on_delete=models.CASCADE)
+    username = models.ForeignKey(User, to_field='username', on_delete=models.CASCADE, db_column='username')
 
 
 class ChatHistory(models.Model):

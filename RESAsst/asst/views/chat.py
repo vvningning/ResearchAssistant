@@ -116,7 +116,7 @@ def insert_collection(paper_id, content):
         collection.insert([{"paper_id": paper_id, "embedding": vector, "text": document.page_content}])
 
 
-# 向量数据库插入
+# 向量数据库删除
 def delete_collection(paper_id):
     collection = Collection("paper_collection")
     collection.load()

@@ -17,7 +17,7 @@ def register(request):
     cursor = conn.cursor()
 
     # 检查是否存在相同的 username
-    cursor.execute("SELECT username FROM user WHERE username=%s", (username,))
+    cursor.execute("SELECT username FROM asst_user WHERE username=%s", (username,))
     existing_user = cursor.fetchone()
 
     if existing_user:
@@ -25,7 +25,7 @@ def register(request):
         return JsonResponse(response)
 
     # 插入新记录
-    cursor.execute("INSERT INTO user (username, password, email) VALUES (%s, %s, %s)", (username, password, email))
+    cursor.execute("INSERT INTO asst_user (username, password, email) VALUES (%s, %s, %s)", (username, password, email))
     conn.commit()  # 提交更改
 
     cursor.close()

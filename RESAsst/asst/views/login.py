@@ -17,7 +17,7 @@ def login(request):
     response = {}
     if username and password:
         cursor = conn.cursor()
-        cursor.execute('SELECT username, password, email FROM user WHERE username=%s AND password = %s', (username, password))
+        cursor.execute('SELECT username, password, email FROM asst_user WHERE username=%s AND password = %s', (username, password))
         user = cursor.fetchone()
         cursor.close()
         conn.close()
