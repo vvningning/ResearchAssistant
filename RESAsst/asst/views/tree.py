@@ -29,7 +29,7 @@ def get_nodes_list(request):
     # ]
     db = mysql.connector.connect(
         host="localhost",  # MySQL服务器地址
-        user="root",  # 用户名
+        user="test",  # 用户名
         password="123456",  # 密码
         database="asst"  # 数据库名称
     )
@@ -51,7 +51,7 @@ def get_nodes_list(request):
 def eid_to_path(eid):
     db = mysql.connector.connect(
         host="localhost",  # MySQL服务器地址
-        user="root",  # 用户名
+        user="test",  # 用户名
         password="123456",  # 密码
         database="asst"  # 数据库名称
     )
@@ -73,7 +73,7 @@ def eid_to_path(eid):
 def replace_eid_with_name(path):
     db = mysql.connector.connect(
         host="localhost",  # MySQL服务器地址
-        user="root",  # 用户名
+        user="test",  # 用户名
         password="123456",  # 密码
         database="asst"  # 数据库名称
     )
@@ -99,7 +99,7 @@ def replace_eid_with_name(path):
 def path_to_eid(path):
     db = mysql.connector.connect(
         host="localhost",  # MySQL服务器地址
-        user="root",  # 用户名
+        user="test",  # 用户名
         password="123456",  # 密码
         database="asst"  # 数据库名称
     )
@@ -134,7 +134,7 @@ def post_selected_node(request):
 def creat_folder_node(path, name, username):
     db = mysql.connector.connect(
         host="localhost",  # MySQL服务器地址
-        user="root",  # 用户名
+        user="test",  # 用户名
         password="123456",  # 密码
         database="asst"  # 数据库名称
     )
@@ -184,7 +184,7 @@ def post_new_folder(request):
 def creat_pdf_node(fpath, cpath, username):
     db = mysql.connector.connect(
         host="localhost",  # MySQL服务器地址
-        user="root",  # 用户名
+        user="test",  # 用户名
         password="123456",  # 密码
         database="asst"  # 数据库名称
     )
@@ -248,7 +248,7 @@ def post_new_document(request):
 def delete_node(path):
     db = mysql.connector.connect(
         host="localhost",  # MySQL服务器地址
-        user="root",  # 用户名
+        user="test",  # 用户名
         password="123456",  # 密码
         database="asst"  # 数据库名称
     )
