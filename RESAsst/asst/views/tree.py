@@ -8,6 +8,9 @@ import mysql.connector
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
+from es.driver import add_index
+from es.driver import delete_index
+
 # 用来存储当前最大的eid（这里不考虑回收使用）
 current_max_eid = 10
 # 是从前端还是从后端获取
@@ -211,6 +214,7 @@ def creat_pdf_node(fpath, cpath, username):
                    (current_max_eid + 1, filename, "pdf", new_path, text, username))
     db.commit()
     current_max_eid = current_max_eid + 1
+    add_index(current_max_eid, username, filename, text)
     document_path = store_path + replace_eid_with_name(new_path)
     print(document_path)
     try:
@@ -270,6 +274,7 @@ def delete_node(path):
     if results:
         eids_to_delete = [eid[0] for eid in results]  # 提取 eid
         ceid = path_to_eid(path)  # 当前节点 eid
+        delete_index(ceid)
         eids_to_delete.append(ceid)
         print(f"将要删除的节点的 ID: {eids_to_delete}")
         delete_query = "DELETE FROM tree WHERE eid IN (%s)" % ','.join(['%s'] * len(eids_to_delete))
