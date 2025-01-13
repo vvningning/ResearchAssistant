@@ -8,6 +8,7 @@ import mysql.connector
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
+from asst.views import insert_collection
 from es.driver import add_index
 from es.driver import delete_index
 
@@ -18,7 +19,6 @@ username = ""
 # 相对路径"../pdf/test.pdf"要以/结尾
 store_path = "../../../../前端/public/pdf"
 
-# cursor = None
 
 # 依据eid查询节点的path
 def eid_to_path(eid):
@@ -30,7 +30,7 @@ def eid_to_path(eid):
     )
     cursor = db.cursor()
     # eid int类型，本节点的eid
-    select_sql = "SELECT path FROM tree WHERE eid = %s"
+    select_sql = "SELECT path FROM asst_build WHERE eid = %s"
     cursor.execute(select_sql, (eid,))
     result = cursor.fetchone()  # 获取一条记录
     if result:
@@ -55,7 +55,7 @@ def replace_eid_with_name(path):
     eids = path.strip('/').split('/')  # 去掉前后的 '/' 并按 '/' 分割
     names = []
     for eid in eids:
-        select_sql = "SELECT name FROM tree WHERE eid = %s"
+        select_sql = "SELECT name FROM asst_build WHERE eid = %s"
         cursor.execute(select_sql, (eid,))
         result = cursor.fetchone()  # 获取一条记录
         if result:
@@ -78,7 +78,7 @@ def path_to_eid(path):
     )
     cursor = db.cursor()
     # path str类型，本节点的path
-    select_sql = "SELECT eid FROM tree WHERE path = %s"
+    select_sql = "SELECT eid FROM asst_build WHERE path = %s"
     cursor.execute(select_sql, (path,))
     result = cursor.fetchone()  # 获取一条记录
     if result:
@@ -120,7 +120,7 @@ def creat_folder_node(path, name, username):
     else:
         new_path = f"{path}/{current_max_eid + 1}"
     # print(new_path)
-    cursor.execute('INSERT INTO tree VALUES (%s, %s, %s, %s, %s, %s)',
+    cursor.execute('INSERT INTO asst_build VALUES (%s, %s, %s, %s, %s, %s)',
                    (current_max_eid + 1, name, "folder", new_path, None, username))
     db.commit()
     current_max_eid = current_max_eid + 1
@@ -180,11 +180,12 @@ def creat_pdf_node(fpath, cpath, username):
     # filename = cpath.rsplit('\\', 1)[-1]
     new_path = f"{fpath}/{current_max_eid + 1}"  # 构建新的 path
     # print(new_path)
-    cursor.execute('INSERT INTO tree VALUES (%s, %s, %s, %s, %s, %s)',
+    cursor.execute('INSERT INTO asst_build VALUES (%s, %s, %s, %s, %s, %s)',
                    (current_max_eid + 1, filename, "pdf", new_path, text, username))
     db.commit()
     current_max_eid = current_max_eid + 1
     add_index(current_max_eid, username, filename, text)
+    insert_collection(current_max_eid, text)
     document_path = store_path + replace_eid_with_name(new_path)
     print(document_path)
     try:
@@ -232,8 +233,8 @@ def delete_node(path):
     SELECT
         e2.eid
     FROM
-        tree e1,
-        tree e2 
+        asst_build e1,
+        asst_build e2 
     WHERE
         e1.path = %s 
         AND e2.path LIKE concat( e1.path, '/%' );
@@ -247,19 +248,19 @@ def delete_node(path):
         delete_index(ceid)
         eids_to_delete.append(ceid)
         print(f"将要删除的节点的 ID: {eids_to_delete}")
-        delete_query = "DELETE FROM tree WHERE eid IN (%s)" % ','.join(['%s'] * len(eids_to_delete))
+        delete_query = "DELETE FROM asst_build WHERE eid IN (%s)" % ','.join(['%s'] * len(eids_to_delete))
         cursor.execute(delete_query, eids_to_delete)
         # 提交更改
         db.commit()
         print(f"已成功删除 {cursor.rowcount} 条记录")
     else:
-        cursor.execute("SELECT * FROM tree WHERE path = %s", (path,))
+        cursor.execute("SELECT * FROM asst_build WHERE path = %s", (path,))
         nodes = cursor.fetchall()
         if not nodes:
             print(f"No nodes found with path: {path}")
             return
         # 删除节点
-        cursor.execute("DELETE FROM tree WHERE path = %s", (path,))
+        cursor.execute("DELETE FROM asst_build WHERE path = %s", (path,))
         db.commit()
         print("已成功删除1条记录")
 
@@ -316,7 +317,7 @@ def get_nodes_list(request):
     )
     cursor = db.cursor()
     username = request.GET.get('username')
-    query = "SELECT name, type, path FROM tree WHERE username = %s"
+    query = "SELECT name, type, path FROM asst_build WHERE username = %s"
     cursor.execute(query, (username,))
     results = cursor.fetchall()
     data = []
