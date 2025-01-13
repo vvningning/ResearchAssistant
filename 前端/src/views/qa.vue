@@ -265,6 +265,7 @@ export default {
     changeFrameHeight() {
       let iframe = document.getElementById("iframe");
       iframe.height = document.documentElement.clientHeight;
+      this.pdfPath = JSON.parse(sessionStorage.getItem("pdf_file_path"));
     },
 
     // 翻译文本

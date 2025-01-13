@@ -19,6 +19,22 @@ username = ""
 # 相对路径"../pdf/test.pdf"要以/结尾
 store_path = "../../../../前端/public/pdf"
 
+# cursor = None
+
+def get_current_max_eid():
+    global current_max_eid
+    db = mysql.connector.connect(
+        host="localhost",  # MySQL服务器地址
+        user="test",  # 用户名
+        password="123456",  # 密码
+        database="asst"  # 数据库名称
+    )
+    cursor = db.cursor()
+    query = "SELECT MAX(eid) FROM asst_build"  # 请根据实际情况替换表名和主键列名
+    cursor.execute(query)
+    current_max_eid = cursor.fetchone()[0]
+    cursor.close()
+    db.close()
 
 # 依据eid查询节点的path
 def eid_to_path(eid):
@@ -39,6 +55,8 @@ def eid_to_path(eid):
     else:
         path = None
         print("未找到记录。")
+    cursor.close()
+    db.close()
     return path
 
 
@@ -65,6 +83,8 @@ def replace_eid_with_name(path):
             names.append(f"未找到ID {eid}")  # 如果未找到对应的名称，可以添加占位符或处理逻辑
     # 将名称组合成新的路径
     new_path = '/' + '/'.join(names)
+    cursor.close()
+    db.close()
     return new_path
 
 
@@ -87,6 +107,8 @@ def path_to_eid(path):
     else:
         eid = None
         print("未找到记录。")
+    cursor.close()
+    db.close()
     return eid
 
 
@@ -96,9 +118,9 @@ def post_selected_node(request):
     if request.method == 'POST':
         data = json.loads(request.body.decode('utf-8'))
         path = data.get('node_path')
-        print(path)
+        pdf_file_path = store_path + replace_eid_with_name(path)
         if path:
-            return JsonResponse({'status': 'success', 'message': 'get_the_path'})
+            return JsonResponse({'status': 'success', 'message': pdf_file_path})
         else:
             return JsonResponse({'status': 'error', 'message': 'lose_the_path'})
     return JsonResponse({'status': 'error', 'message': '请求方法不正确'})
@@ -131,6 +153,8 @@ def creat_folder_node(path, name, username):
         print(f"已成功创建")
     except Exception as e:
         print(f"创建文件夹失败: {e}")
+    cursor.close()
+    db.close()
     return new_path
 
 
@@ -194,6 +218,8 @@ def creat_pdf_node(fpath, cpath, username):
         print(f"文件已上传")
     except Exception as e:
         print(f"上传文件时发生错误: {e}")
+    cursor.close()
+    db.close()
     return new_path
 
 
@@ -263,6 +289,8 @@ def delete_node(path):
         cursor.execute("DELETE FROM asst_build WHERE path = %s", (path,))
         db.commit()
         print("已成功删除1条记录")
+    cursor.close()
+    db.close()
 
 
 def delete_path(node_path):
@@ -309,6 +337,7 @@ def get_nodes_list(request):
     #     {"name": "node3", "type": "folder", "path": "/1/3"},
     #     {"name": "node4", "type": "folder", "path": "/1/2/4"},
     # ]
+    get_current_max_eid()
     db = mysql.connector.connect(
         host="localhost",  # MySQL服务器地址
         user="test",  # 用户名
@@ -330,4 +359,6 @@ def get_nodes_list(request):
             if type_ == "pdf":
                 type_ = "document"  # 转换类型为 'document'
             data.append({"name": node_name, "type": type_, "path": path})
+    cursor.close()
+    db.close()
     return JsonResponse(data, safe=False)

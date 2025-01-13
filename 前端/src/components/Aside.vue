@@ -107,6 +107,9 @@
 
         deleteDialogVisible: false,
         deleteNodeLabel: '',
+
+        clickTimer: null,
+        clickDelay: 500, //500ms
       }
     },
 
@@ -125,16 +128,28 @@
         this.activeNode = node; // 更新选中的节点
         //返回当前选中节点path
         const active_node = this.nodes_list.find(item => item.name === node.label);
-        //console.log(active_node.path);
-        post_selected_node(active_node.path).then(response => {
-          if (response.status === 'success') {
-            console.log('拿到了path');
-          } else {
-            console.log('没拿到path');
-          }
-        }).catch(error => {
-          this.$message.error('请求失败：' + error.message);
-        });
+
+        if (this.clickTimer) {
+          // 如果 Timer 存在，说明是双击
+          clearTimeout(this.clickTimer);
+          this.clickTimer = null;
+          post_selected_node(active_node.path).then(response => {
+            if (response.status === 'success') {
+              console.log('拿到了path');
+              sessionStorage.setItem("pdf_file_path", JSON.stringify(response.message));
+              this.$router.push({path: '/home/qa', query: {eid:node.id}})
+            } else {
+              console.log('没拿到path');
+            }
+          }).catch(error => {
+            this.$message.error('请求失败：' + error.message);
+          });
+        } else {
+          // 如果 Timer 不存在，设置一个 Timer
+          this.clickTimer = setTimeout(() => {
+            this.clickTimer = null;
+          }, this.clickDelay);
+        }
       },
 
       // 点击el-tree之外的地方，菜单就消失
