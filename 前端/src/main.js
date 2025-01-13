@@ -13,6 +13,7 @@ import './fonts/fonts.css'
 
 //引入css
 import '@/assets/css/global.css'
+import VueSession from 'vue-session'
 
 createApp(App)
 .use(ElementPlus, {

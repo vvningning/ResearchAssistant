@@ -92,7 +92,7 @@
           label: 'label',
         },
 
-        username : "user1",
+        username : "",
         activeNode: null, // 用于存储当前选中的节点
 
         showMenu: false,
@@ -246,6 +246,7 @@
 
       //从后端依据username拿到树状表结构
       get_nodes_list(){
+        this.username = JSON.parse(sessionStorage.getItem("username"));
         get_nodes_list(this.username).then(response => {
           if (Array.isArray(response)) {
             this.nodes_list = response.map(item => ({

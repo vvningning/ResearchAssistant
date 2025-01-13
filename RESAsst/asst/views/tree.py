@@ -12,43 +12,13 @@ from es.driver import add_index
 from es.driver import delete_index
 
 # 用来存储当前最大的eid（这里不考虑回收使用）
-current_max_eid = 10
+current_max_eid = 0
 # 是从前端还是从后端获取
-username = "user1"
+username = ""
 # 相对路径"../pdf/test.pdf"要以/结尾
-store_path = "C:/code_space/search_assistant/前端/public/pdf"
-
+store_path = "../../../../前端/public/pdf"
 
 # cursor = None
-
-def get_nodes_list(request):
-    global username
-    # print(request.GET.get('username'))
-    # data = [
-    #     {"name": "node1", "type": "folder", "path": "/1"},
-    #     {"name": "node2", "type": "document", "path": "/1/2"},
-    #     {"name": "node3", "type": "folder", "path": "/1/3"},
-    #     {"name": "node4", "type": "folder", "path": "/1/2/4"},
-    # ]
-    db = mysql.connector.connect(
-        host="localhost",  # MySQL服务器地址
-        user="test",  # 用户名
-        password="123456",  # 密码
-        database="asst"  # 数据库名称
-    )
-    cursor = db.cursor()
-    username = request.GET.get('username')
-    query = "SELECT name, type, path FROM tree WHERE username = %s"
-    cursor.execute(query, (username,))
-    results = cursor.fetchall()
-    data = []
-    for name, type_, path in results:
-        node_name = name[:4]
-        if type_ == "pdf":
-            type_ = "document"  # 转换类型为 'document'
-        data.append({"name": node_name, "type": type_, "path": path})
-    return JsonResponse(data, safe=False)
-
 
 # 依据eid查询节点的path
 def eid_to_path(eid):
@@ -327,3 +297,36 @@ def post_deleted_node(request):
         else:
             return JsonResponse({'status': 'error', 'message': 'lose_the_path'})
     return JsonResponse({'status': 'error', 'message': '请求方法不正确'})
+
+
+def get_nodes_list(request):
+    global username
+    # print(request.GET.get('username'))
+    # data = [
+    #     {"name": "node1", "type": "folder", "path": "/1"},
+    #     {"name": "node2", "type": "document", "path": "/1/2"},
+    #     {"name": "node3", "type": "folder", "path": "/1/3"},
+    #     {"name": "node4", "type": "folder", "path": "/1/2/4"},
+    # ]
+    db = mysql.connector.connect(
+        host="localhost",  # MySQL服务器地址
+        user="test",  # 用户名
+        password="123456",  # 密码
+        database="asst"  # 数据库名称
+    )
+    cursor = db.cursor()
+    username = request.GET.get('username')
+    query = "SELECT name, type, path FROM tree WHERE username = %s"
+    cursor.execute(query, (username,))
+    results = cursor.fetchall()
+    data = []
+    if not results:  # 说明是一个新用户
+        path = creat_folder_node(None, "root_node", username)
+        data.append({"name": "root", "type": "folder", "path": path})
+    else:
+        for name, type_, path in results:
+            node_name = name[:4]
+            if type_ == "pdf":
+                type_ = "document"  # 转换类型为 'document'
+            data.append({"name": node_name, "type": type_, "path": path})
+    return JsonResponse(data, safe=False)
