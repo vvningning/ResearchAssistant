@@ -329,7 +329,7 @@
   .asidePos{
     min-width:200px;
     width: 14.7%;
-    height: 90vh;
+    min-height: 90vh;
     margin-right: 0.5rem;
     display: inline-block;
   }

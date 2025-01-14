@@ -80,7 +80,7 @@ export default {
           }
           else {
             alert('注册成功！')
-            this.$router.push({path:'/home/content'})
+            this.$router.push({path:'/home/searchPage',query: {username:this.username}})
           }
         })
     },
