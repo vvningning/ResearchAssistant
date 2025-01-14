@@ -10,8 +10,8 @@
         @node-contextmenu="handleNodeContextMenu"
       >
         <template #default="{ node }">
-          <el-icon v-if="icon_isfolder(node.label)"><Folder /></el-icon>
-          <el-icon v-else><Document /></el-icon>
+          <el-icon v-if="icon_isfolder(node.label)"><Document /></el-icon>
+          <el-icon v-else><Folder /></el-icon>
           <span :class="{ 'active-node': isActiveNode(node) }" style="margin-left: 3px">{{ node.label }}</span>
         </template>
       </el-tree>
@@ -70,12 +70,6 @@
           {
             label: 'root',
             id: 1,
-            children: [
-              {
-                label: 'Level one 1-1',
-                id: 2,
-              },
-            ],
           },
         ],
         nodes_list : [
@@ -133,17 +127,19 @@
           // 如果 Timer 存在，说明是双击
           clearTimeout(this.clickTimer);
           this.clickTimer = null;
-          post_selected_node(active_node.path).then(response => {
-            if (response.status === 'success') {
-              console.log('拿到了path');
-              sessionStorage.setItem("pdf_file_path", JSON.stringify(response.message));
-              this.$router.push({path: '/home/qa', query: {eid:node.id}})
-            } else {
-              console.log('没拿到path');
-            }
-          }).catch(error => {
-            this.$message.error('请求失败：' + error.message);
-          });
+          if (active_node.type == "document"){
+            post_selected_node(active_node.path).then(response => {
+              if (response.status === 'success') {
+                console.log(response.message);
+                sessionStorage.setItem("pdf_file_path", JSON.stringify(response.message));
+                this.$router.push({path: '/home/qa', query: {eid:node.id}})
+              } else {
+                console.log('没拿到path');
+              }
+            }).catch(error => {
+              this.$message.error('请求失败：' + error.message);
+            });
+          }
         } else {
           // 如果 Timer 不存在，设置一个 Timer
           this.clickTimer = setTimeout(() => {
@@ -302,7 +298,7 @@
         //console.log('测试1:', label);
         const node = this.nodes_list.find(item => item.name === label);
         if (node) {
-          return node.type === "folder"; // 如果是 "folder" 返回 true，"document" 返回 false
+          return node.type === "document"; // 如果是 "document" 返回 true，"folder" 返回 false
         }
         // 如果没有找到对应的项，返回false
         return false;

@@ -272,7 +272,13 @@ export default {
     changeFrameHeight() {
       let iframe = document.getElementById("iframe");
       iframe.height = document.documentElement.clientHeight;
-      this.pdfPath = JSON.parse(sessionStorage.getItem("pdf_file_path"));
+
+      const abspdfPath = JSON.parse(sessionStorage.getItem("pdf_file_path"));
+      const pdfIndex = abspdfPath.indexOf("pdf");
+      if (pdfIndex !== -1) {
+          // 从"pdf"开始提取子字符串
+          this.pdfPath = originalPath.substring(pdfIndex).replace(/\\/g, "/"); // 使用正斜杠替换反斜杠
+      }
     },
 
     // 翻译文本

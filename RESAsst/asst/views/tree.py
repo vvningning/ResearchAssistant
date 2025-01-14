@@ -17,7 +17,7 @@ current_max_eid = 0
 # 是从前端还是从后端获取
 username = ""
 # 相对路径"../pdf/test.pdf"要以/结尾
-store_path = "../../../../前端/public/pdf"
+store_path = "..\..\..\前端\public\pdf"
 
 # cursor = None
 
@@ -33,6 +33,8 @@ def get_current_max_eid():
     query = "SELECT MAX(eid) FROM asst_build"  # 请根据实际情况替换表名和主键列名
     cursor.execute(query)
     current_max_eid = cursor.fetchone()[0]
+    if current_max_eid is None:
+        current_max_eid = 0
     cursor.close()
     db.close()
 
@@ -119,8 +121,10 @@ def post_selected_node(request):
         data = json.loads(request.body.decode('utf-8'))
         path = data.get('node_path')
         pdf_file_path = store_path + replace_eid_with_name(path)
+        current_file_path = os.path.dirname(os.path.realpath(__file__))
+        absolute_path = os.path.abspath(os.path.join(current_file_path, pdf_file_path))
         if path:
-            return JsonResponse({'status': 'success', 'message': pdf_file_path})
+            return JsonResponse({'status': 'success', 'message': absolute_path})
         else:
             return JsonResponse({'status': 'error', 'message': 'lose_the_path'})
     return JsonResponse({'status': 'error', 'message': '请求方法不正确'})
@@ -148,8 +152,11 @@ def creat_folder_node(path, name, username):
     current_max_eid = current_max_eid + 1
     folder_path = store_path + replace_eid_with_name(new_path)
     print(folder_path)
+    current_file_path = os.path.dirname(os.path.realpath(__file__))
+    absolute_path = os.path.abspath(os.path.join(current_file_path, folder_path))
+    print(absolute_path)
     try:
-        os.makedirs(folder_path, exist_ok=True)  # 如果文件夹已存在则不会报错
+        os.makedirs(absolute_path, exist_ok=True)  # 如果文件夹已存在则不会报错
         print(f"已成功创建")
     except Exception as e:
         print(f"创建文件夹失败: {e}")
@@ -211,10 +218,12 @@ def creat_pdf_node(fpath, cpath, username):
     add_index(current_max_eid, username, filename, text)
     insert_collection(current_max_eid, text)
     document_path = store_path + replace_eid_with_name(new_path)
-    print(document_path)
+    current_file_path = os.path.dirname(os.path.realpath(__file__))
+    absolute_path = os.path.abspath(os.path.join(current_file_path, document_path))
+    print(absolute_path)
     try:
         # 复制文件到目标路径
-        shutil.copy(cpath, document_path)
+        shutil.copy(cpath, absolute_path)
         print(f"文件已上传")
     except Exception as e:
         print(f"上传文件时发生错误: {e}")
@@ -317,9 +326,11 @@ def post_deleted_node(request):
         data = json.loads(request.body.decode('utf-8'))
         path = data.get('node_path')
         node_path = store_path + replace_eid_with_name(path)
+        current_file_path = os.path.dirname(os.path.realpath(__file__))
+        absolute_path = os.path.abspath(os.path.join(current_file_path, node_path))
         delete_node(path)
-        print(node_path)
-        delete_path(node_path)
+        print(absolute_path)
+        delete_path(absolute_path)
         # print(path)
         if path:
             return JsonResponse({'status': 'success', 'message': 'get_the_path'})
