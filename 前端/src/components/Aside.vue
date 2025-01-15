@@ -10,8 +10,8 @@
         @node-contextmenu="handleNodeContextMenu"
       >
         <template #default="{ node }">
-          <el-icon v-if="icon_isfolder(node.label)"><Folder /></el-icon>
-          <el-icon v-else><Document /></el-icon>
+          <el-icon v-if="icon_isfolder(node.label)"><Document /></el-icon>
+          <el-icon v-else><Folder /></el-icon>
           <span :class="{ 'active-node': isActiveNode(node) }" style="margin-left: 3px">{{ node.label }}</span>
         </template>
       </el-tree>
@@ -70,12 +70,6 @@
           {
             label: 'root',
             id: 1,
-            children: [
-              {
-                label: 'Level one 1-1',
-                id: 2,
-              },
-            ],
           },
         ],
         nodes_list : [
@@ -92,7 +86,7 @@
           label: 'label',
         },
 
-        username : "user1",
+        username : "",
         activeNode: null, // 用于存储当前选中的节点
 
         showMenu: false,
@@ -107,6 +101,9 @@
 
         deleteDialogVisible: false,
         deleteNodeLabel: '',
+
+        clickTimer: null,
+        clickDelay: 500, //500ms
       }
     },
 
@@ -125,16 +122,30 @@
         this.activeNode = node; // 更新选中的节点
         //返回当前选中节点path
         const active_node = this.nodes_list.find(item => item.name === node.label);
-        //console.log(active_node.path);
-        post_selected_node(active_node.path).then(response => {
-          if (response.status === 'success') {
-            console.log('拿到了path');
-          } else {
-            console.log('没拿到path');
+
+        if (this.clickTimer) {
+          // 如果 Timer 存在，说明是双击
+          clearTimeout(this.clickTimer);
+          this.clickTimer = null;
+          if (active_node.type == "document"){
+            post_selected_node(active_node.path).then(response => {
+              if (response.status === 'success') {
+                console.log(response.message);
+                sessionStorage.setItem("pdf_file_path", JSON.stringify(response.message));
+                this.$router.push({path: '/home/qa', query: {eid:node.id}})
+              } else {
+                console.log('没拿到path');
+              }
+            }).catch(error => {
+              this.$message.error('请求失败：' + error.message);
+            });
           }
-        }).catch(error => {
-          this.$message.error('请求失败：' + error.message);
-        });
+        } else {
+          // 如果 Timer 不存在，设置一个 Timer
+          this.clickTimer = setTimeout(() => {
+            this.clickTimer = null;
+          }, this.clickDelay);
+        }
       },
 
       // 点击el-tree之外的地方，菜单就消失
@@ -246,6 +257,7 @@
 
       //从后端依据username拿到树状表结构
       get_nodes_list(){
+        this.username = JSON.parse(sessionStorage.getItem("username"));
         get_nodes_list(this.username).then(response => {
           if (Array.isArray(response)) {
             this.nodes_list = response.map(item => ({
@@ -286,7 +298,7 @@
         //console.log('测试1:', label);
         const node = this.nodes_list.find(item => item.name === label);
         if (node) {
-          return node.type === "folder"; // 如果是 "folder" 返回 true，"document" 返回 false
+          return node.type === "document"; // 如果是 "document" 返回 true，"folder" 返回 false
         }
         // 如果没有找到对应的项，返回false
         return false;
@@ -313,7 +325,7 @@
   .asidePos{
     min-width:200px;
     width: 14.7%;
-    height: 90vh;
+    min-height: 90vh;
     margin-right: 0.5rem;
     display: inline-block;
   }

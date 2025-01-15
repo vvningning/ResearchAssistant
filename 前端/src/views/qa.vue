@@ -1,13 +1,7 @@
 <template>
   <div class="container">
-    <div class="left-panel">
-      <el-card style="width: 100%; height: 20%">
-        <div style="display: flex; width: 100%; height: 100%">
-          论文关键词
-          <p>{{ keywords }}</p>
-        </div>
-      </el-card>
-      <el-card style="width: 100%; height: 80%; margin-top: 10px">
+    <div class="left-panel" :style="{ width: isRightPanelVisible ? '65%' : '100%' }">
+      <el-card style="width: 100%; height: 100%">
         <div style="display: flex; width: 100%;height: 100%">
           <iframe id="iframe" name="iframe" height="100%" width="100%"
             :src="`/pdfUtils/web/viewer.html?file=${pdfPath}`" scrolling="auto" frameborder="0">
@@ -18,7 +12,13 @@
         </div>
       </el-card>
     </div>
-    <div class="right-panel">
+
+    <!-- 展开按钮 -->
+    <div v-if="!isRightPanelVisible" @click="toggleRightPanel">
+      <img src="../assets/images/unfold.png" alt="展开聊天" height="20" />
+    </div>
+
+    <div class="right-panel" v-show="isRightPanelVisible">
       <div style="display: flex; flex-direction: column; height: 100%">
         <!-- 聊天记录部分 -->
         <el-card class="chat-card" style="position: relative;">
@@ -32,6 +32,10 @@
                   <el-dropdown-item command="clear" style="display: flex; align-items: center;">
                     <img src="../assets/images/clearMsg.png" alt="清空聊天" height="20" style="margin-right: 10px" />
                     清空聊天内容
+                  </el-dropdown-item>
+                  <el-dropdown-item command="hide" style="display: flex; align-items: center;">
+                    <img src="../assets/images/fold.png" alt="收起聊天" height="20" style="margin-right: 10px" />
+                    收起聊天
                   </el-dropdown-item>
                 </el-dropdown-menu>
               </template>
@@ -82,6 +86,7 @@ export default {
       isInputDisabled: false,
       isButtonDisabled: false,
       typingInterval: null,
+      isRightPanelVisible: true,  // 控制右侧面板显示
 
       pdfPath: "/pdf/GraphGPT.pdf",
       selectedText: '',
@@ -222,6 +227,8 @@ export default {
     handleCommand(command) {
       if (command === 'clear') {
         this.clearChat();
+      } else if (command === 'hide') {
+        this.toggleRightPanel();
       }
     },
 
@@ -265,6 +272,13 @@ export default {
     changeFrameHeight() {
       let iframe = document.getElementById("iframe");
       iframe.height = document.documentElement.clientHeight;
+
+      const abspdfPath = JSON.parse(sessionStorage.getItem("pdf_file_path"));
+      const pdfIndex = abspdfPath.indexOf("pdf");
+      if (pdfIndex !== -1) {
+          // 从"pdf"开始提取子字符串
+          this.pdfPath = originalPath.substring(pdfIndex).replace(/\\/g, "/"); // 使用正斜杠替换反斜杠
+      }
     },
 
     // 翻译文本
@@ -280,6 +294,10 @@ export default {
         this.translatedText = data.trans_result[0].dst;
         console.log(this.translatedText)
       }).catch((resp) => console.warn(resp))
+    },
+
+    toggleRightPanel() {
+      this.isRightPanelVisible = !this.isRightPanelVisible;
     }
   },
   components:{
@@ -291,11 +309,10 @@ export default {
   .container {
     display: flex;
     padding: 20px;
-    height: 1000px;
   }
 
   .left-panel {
-    width: 65%;
+    /*width: 65%;*/
     padding-right: 20px;
   }
 

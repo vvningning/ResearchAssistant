@@ -8,28 +8,21 @@ import mysql.connector
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
+from asst.views import insert_collection
 from es.driver import add_index
 from es.driver import delete_index
 
 # 用来存储当前最大的eid（这里不考虑回收使用）
-current_max_eid = 10
+current_max_eid = 0
 # 是从前端还是从后端获取
-username = "user1"
+username = ""
 # 相对路径"../pdf/test.pdf"要以/结尾
-store_path = "C:/code_space/search_assistant/前端/public/pdf"
-
+store_path = "..\..\..\前端\public\pdf"
 
 # cursor = None
 
-def get_nodes_list(request):
-    global username
-    # print(request.GET.get('username'))
-    # data = [
-    #     {"name": "node1", "type": "folder", "path": "/1"},
-    #     {"name": "node2", "type": "document", "path": "/1/2"},
-    #     {"name": "node3", "type": "folder", "path": "/1/3"},
-    #     {"name": "node4", "type": "folder", "path": "/1/2/4"},
-    # ]
+def get_current_max_eid():
+    global current_max_eid
     db = mysql.connector.connect(
         host="localhost",  # MySQL服务器地址
         user="test",  # 用户名
@@ -37,18 +30,13 @@ def get_nodes_list(request):
         database="asst"  # 数据库名称
     )
     cursor = db.cursor()
-    username = request.GET.get('username')
-    query = "SELECT name, type, path FROM tree WHERE username = %s"
-    cursor.execute(query, (username,))
-    results = cursor.fetchall()
-    data = []
-    for name, type_, path in results:
-        node_name = name[:4]
-        if type_ == "pdf":
-            type_ = "document"  # 转换类型为 'document'
-        data.append({"name": node_name, "type": type_, "path": path})
-    return JsonResponse(data, safe=False)
-
+    query = "SELECT MAX(eid) FROM asst_build"  # 请根据实际情况替换表名和主键列名
+    cursor.execute(query)
+    current_max_eid = cursor.fetchone()[0]
+    if current_max_eid is None:
+        current_max_eid = 0
+    cursor.close()
+    db.close()
 
 # 依据eid查询节点的path
 def eid_to_path(eid):
@@ -60,7 +48,7 @@ def eid_to_path(eid):
     )
     cursor = db.cursor()
     # eid int类型，本节点的eid
-    select_sql = "SELECT path FROM tree WHERE eid = %s"
+    select_sql = "SELECT path FROM asst_build WHERE eid = %s"
     cursor.execute(select_sql, (eid,))
     result = cursor.fetchone()  # 获取一条记录
     if result:
@@ -69,6 +57,8 @@ def eid_to_path(eid):
     else:
         path = None
         print("未找到记录。")
+    cursor.close()
+    db.close()
     return path
 
 
@@ -85,7 +75,7 @@ def replace_eid_with_name(path):
     eids = path.strip('/').split('/')  # 去掉前后的 '/' 并按 '/' 分割
     names = []
     for eid in eids:
-        select_sql = "SELECT name FROM tree WHERE eid = %s"
+        select_sql = "SELECT name FROM asst_build WHERE eid = %s"
         cursor.execute(select_sql, (eid,))
         result = cursor.fetchone()  # 获取一条记录
         if result:
@@ -95,6 +85,8 @@ def replace_eid_with_name(path):
             names.append(f"未找到ID {eid}")  # 如果未找到对应的名称，可以添加占位符或处理逻辑
     # 将名称组合成新的路径
     new_path = '/' + '/'.join(names)
+    cursor.close()
+    db.close()
     return new_path
 
 
@@ -108,7 +100,7 @@ def path_to_eid(path):
     )
     cursor = db.cursor()
     # path str类型，本节点的path
-    select_sql = "SELECT eid FROM tree WHERE path = %s"
+    select_sql = "SELECT eid FROM asst_build WHERE path = %s"
     cursor.execute(select_sql, (path,))
     result = cursor.fetchone()  # 获取一条记录
     if result:
@@ -117,6 +109,8 @@ def path_to_eid(path):
     else:
         eid = None
         print("未找到记录。")
+    cursor.close()
+    db.close()
     return eid
 
 
@@ -126,9 +120,11 @@ def post_selected_node(request):
     if request.method == 'POST':
         data = json.loads(request.body.decode('utf-8'))
         path = data.get('node_path')
-        print(path)
+        pdf_file_path = store_path + replace_eid_with_name(path)
+        current_file_path = os.path.dirname(os.path.realpath(__file__))
+        absolute_path = os.path.abspath(os.path.join(current_file_path, pdf_file_path))
         if path:
-            return JsonResponse({'status': 'success', 'message': 'get_the_path'})
+            return JsonResponse({'status': 'success', 'message': absolute_path})
         else:
             return JsonResponse({'status': 'error', 'message': 'lose_the_path'})
     return JsonResponse({'status': 'error', 'message': '请求方法不正确'})
@@ -150,17 +146,22 @@ def creat_folder_node(path, name, username):
     else:
         new_path = f"{path}/{current_max_eid + 1}"
     # print(new_path)
-    cursor.execute('INSERT INTO tree VALUES (%s, %s, %s, %s, %s, %s)',
+    cursor.execute('INSERT INTO asst_build VALUES (%s, %s, %s, %s, %s, %s)',
                    (current_max_eid + 1, name, "folder", new_path, None, username))
     db.commit()
     current_max_eid = current_max_eid + 1
     folder_path = store_path + replace_eid_with_name(new_path)
     print(folder_path)
+    current_file_path = os.path.dirname(os.path.realpath(__file__))
+    absolute_path = os.path.abspath(os.path.join(current_file_path, folder_path))
+    print(absolute_path)
     try:
-        os.makedirs(folder_path, exist_ok=True)  # 如果文件夹已存在则不会报错
+        os.makedirs(absolute_path, exist_ok=True)  # 如果文件夹已存在则不会报错
         print(f"已成功创建")
     except Exception as e:
         print(f"创建文件夹失败: {e}")
+    cursor.close()
+    db.close()
     return new_path
 
 
@@ -210,19 +211,24 @@ def creat_pdf_node(fpath, cpath, username):
     # filename = cpath.rsplit('\\', 1)[-1]
     new_path = f"{fpath}/{current_max_eid + 1}"  # 构建新的 path
     # print(new_path)
-    cursor.execute('INSERT INTO tree VALUES (%s, %s, %s, %s, %s, %s)',
+    cursor.execute('INSERT INTO asst_build VALUES (%s, %s, %s, %s, %s, %s)',
                    (current_max_eid + 1, filename, "pdf", new_path, text, username))
     db.commit()
     current_max_eid = current_max_eid + 1
     add_index(current_max_eid, username, filename, text)
+    insert_collection(current_max_eid, text)
     document_path = store_path + replace_eid_with_name(new_path)
-    print(document_path)
+    current_file_path = os.path.dirname(os.path.realpath(__file__))
+    absolute_path = os.path.abspath(os.path.join(current_file_path, document_path))
+    print(absolute_path)
     try:
         # 复制文件到目标路径
-        shutil.copy(cpath, document_path)
+        shutil.copy(cpath, absolute_path)
         print(f"文件已上传")
     except Exception as e:
         print(f"上传文件时发生错误: {e}")
+    cursor.close()
+    db.close()
     return new_path
 
 
@@ -262,8 +268,8 @@ def delete_node(path):
     SELECT
         e2.eid
     FROM
-        tree e1,
-        tree e2 
+        asst_build e1,
+        asst_build e2 
     WHERE
         e1.path = %s 
         AND e2.path LIKE concat( e1.path, '/%' );
@@ -283,12 +289,13 @@ def delete_node(path):
             delete_index(eid)
 
         delete_query = "DELETE FROM tree WHERE eid IN (%s)" % ','.join(['%s'] * len(eids_to_delete))
+        delete_query = "DELETE FROM asst_build WHERE eid IN (%s)" % ','.join(['%s'] * len(eids_to_delete))
         cursor.execute(delete_query, eids_to_delete)
         # 提交更改
         db.commit()
         print(f"已成功删除 {cursor.rowcount} 条记录")
     else:
-        cursor.execute("SELECT * FROM tree WHERE path = %s", (path,))
+        cursor.execute("SELECT * FROM asst_build WHERE path = %s", (path,))
         nodes = cursor.fetchall()
         if not nodes:
             print(f"No nodes found with path: {path}")
@@ -300,9 +307,11 @@ def delete_node(path):
 
 
         # 删除节点
-        cursor.execute("DELETE FROM tree WHERE path = %s", (path,))
+        cursor.execute("DELETE FROM asst_build WHERE path = %s", (path,))
         db.commit()
         print("已成功删除1条记录")
+    cursor.close()
+    db.close()
 
 
 def delete_path(node_path):
@@ -329,12 +338,50 @@ def post_deleted_node(request):
         data = json.loads(request.body.decode('utf-8'))
         path = data.get('node_path')
         node_path = store_path + replace_eid_with_name(path)
+        current_file_path = os.path.dirname(os.path.realpath(__file__))
+        absolute_path = os.path.abspath(os.path.join(current_file_path, node_path))
         delete_node(path)
-        print(node_path)
-        delete_path(node_path)
+        print(absolute_path)
+        delete_path(absolute_path)
         # print(path)
         if path:
             return JsonResponse({'status': 'success', 'message': 'get_the_path'})
         else:
             return JsonResponse({'status': 'error', 'message': 'lose_the_path'})
     return JsonResponse({'status': 'error', 'message': '请求方法不正确'})
+
+
+def get_nodes_list(request):
+    global username
+    # print(request.GET.get('username'))
+    # data = [
+    #     {"name": "node1", "type": "folder", "path": "/1"},
+    #     {"name": "node2", "type": "document", "path": "/1/2"},
+    #     {"name": "node3", "type": "folder", "path": "/1/3"},
+    #     {"name": "node4", "type": "folder", "path": "/1/2/4"},
+    # ]
+    get_current_max_eid()
+    db = mysql.connector.connect(
+        host="localhost",  # MySQL服务器地址
+        user="test",  # 用户名
+        password="123456",  # 密码
+        database="asst"  # 数据库名称
+    )
+    cursor = db.cursor()
+    username = request.GET.get('username')
+    query = "SELECT name, type, path FROM asst_build WHERE username = %s"
+    cursor.execute(query, (username,))
+    results = cursor.fetchall()
+    data = []
+    if not results:  # 说明是一个新用户
+        path = creat_folder_node(None, "root_node", username)
+        data.append({"name": "root", "type": "folder", "path": path})
+    else:
+        for name, type_, path in results:
+            node_name = name[:4]
+            if type_ == "pdf":
+                type_ = "document"  # 转换类型为 'document'
+            data.append({"name": node_name, "type": type_, "path": path})
+    cursor.close()
+    db.close()
+    return JsonResponse(data, safe=False)

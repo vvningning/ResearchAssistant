@@ -2,7 +2,7 @@
   <div class="head">
     <!--   logo   -->
     <div style="display: flex; min-width: 200px; width: 15%; height:100%;justify-content: center;align-items: center;">
-      <img style="height:80%" src="../assets/images/厨师.jpg">
+      <img style="height:80%" src="../assets/images/logo.png" alt="logo">
     </div>
     <div style="border: 1px solid #c8c9cc;border-right: 10px">
     </div>
@@ -59,7 +59,6 @@ name: "Header",
   overflow: hidden;
   display:flex;
   height: 60px;
-  min-width: 1400px;
   width:100%;
   margin-bottom: 1rem;
   background-color: #fff;

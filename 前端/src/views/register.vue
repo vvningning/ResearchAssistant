@@ -80,7 +80,8 @@ export default {
           }
           else {
             alert('注册成功！')
-            this.$router.push({path:'/home/content'})
+            sessionStorage.setItem("username", JSON.stringify(this.username));
+            this.$router.push({path:'/home/searchPage',query: {username:this.username}})
           }
         })
     },

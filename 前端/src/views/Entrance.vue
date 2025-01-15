@@ -76,6 +76,7 @@ export default {
           this.username = response.username;  // 更新前端的用户名
           this.loginSuccess = response.res;   // 获取登录结果（成功/失败）
           alert('登录成功！')
+          sessionStorage.setItem("username", JSON.stringify(this.username));
           this.$router.push({path:'/home/searchPage',query: {username:this.username}})
         } else if (!response.res) {
           alert('用户名或密码输入错误！')
