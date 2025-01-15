@@ -288,9 +288,15 @@ def delete_node(path):
     if results:
         eids_to_delete = [eid[0] for eid in results]  # 提取 eid
         ceid = path_to_eid(path)  # 当前节点 eid
-        delete_index(ceid)
+
         eids_to_delete.append(ceid)
         print(f"将要删除的节点的 ID: {eids_to_delete}")
+
+        # 删除每个节点的索引
+        for eid in eids_to_delete:
+            delete_index(eid)
+
+        delete_query = "DELETE FROM tree WHERE eid IN (%s)" % ','.join(['%s'] * len(eids_to_delete))
         delete_query = "DELETE FROM asst_build WHERE eid IN (%s)" % ','.join(['%s'] * len(eids_to_delete))
         cursor.execute(delete_query, eids_to_delete)
         # 提交更改
@@ -302,6 +308,12 @@ def delete_node(path):
         if not nodes:
             print(f"No nodes found with path: {path}")
             return
+
+        # 删除节点的索引
+        ceid = path_to_eid(path)  # 当前节点eid
+        delete_index(ceid)
+
+
         # 删除节点
         cursor.execute("DELETE FROM asst_build WHERE path = %s", (path,))
         db.commit()
