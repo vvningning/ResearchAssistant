@@ -4,10 +4,10 @@ from pymilvus import connections, FieldSchema, CollectionSchema, DataType, Colle
 def create_collection():
     # 定义字段
     fields = [
-        FieldSchema(name="id", dtype=DataType.INT64, is_primary=True, auto_id=True),
+        FieldSchema(name="id", dtype=DataType.VARCHAR, is_primary=True, max_length=20),
         FieldSchema(name="paper_id", dtype=DataType.INT64),
         FieldSchema(name="embedding", dtype=DataType.FLOAT_VECTOR, dim=2560),
-        FieldSchema(name="text", dtype=DataType.VARCHAR, max_length=256)
+        FieldSchema(name="text", dtype=DataType.VARCHAR, max_length=600)
     ]
 
     # 定义集合模式

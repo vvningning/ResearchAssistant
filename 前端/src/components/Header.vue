@@ -15,7 +15,7 @@
       <el-button style="margin: auto 1rem;" circle>
         <div class="el-icon-bell"></div>
       </el-button>
-      <span>{{identify}}: {{username}}</span>
+      <span>{{username}}</span>
       <!--退出-->
       <el-button style="margin: auto 1.5rem" circle @click="exit">
         <div class="el-icon-switch-button"></div>
@@ -36,13 +36,11 @@ name: "Header",
   },
   data(){
     return{
-      identifies: ['Name'],
-      identify: '',
       username: '普通用户',
     }
   },
   created(){
-    this.identify = this.identifies[0];
+    this.username = JSON.parse(sessionStorage.getItem("username"));
   },
   methods:{
     exit(){

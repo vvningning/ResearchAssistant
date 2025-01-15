@@ -23,8 +23,6 @@
 
 
 <script>
-import axios from 'axios'
-import md5 from 'js-md5'
 import request from '@/utils/request'
 
 export default {

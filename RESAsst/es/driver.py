@@ -37,19 +37,19 @@ def init_index():
                         }
                     }
                 },
-                'analysis': {
-                    'tokenizer': {
-                        'ik_max_word': {
-                            'type': 'ik_max_word'
-                        }
-                    },
-                    'analyzer': {
-                        'default': {
-                            'type': 'custom',
-                            'tokenizer': 'ik_max_word'
-                        }
-                    }
-                }
+                # 'analysis': {
+                #     'tokenizer': {
+                #         'ik_max_word': {
+                #             'type': 'ik_max_word'
+                #         }
+                #     },
+                #     'analyzer': {
+                #         'default': {
+                #             'type': 'custom',
+                #             'tokenizer': 'ik_max_word'
+                #         }
+                #     }
+                # }
             },
             'mappings': {
                 'properties': {

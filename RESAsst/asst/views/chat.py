@@ -2,11 +2,10 @@ import json
 import langid
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pymilvus import connections, Collection
 
-from asst.models import ChatHistory
-from asst.services.Embedding import get_embq_embedding, parser_Message, get_embp_embedding
+from asst.models import ChatHistory, Build
+from asst.services.Embedding import get_embq_embedding, parser_Message
 from asst.services.SparkChat import get_ans, init_messages
 
 APPID = '9b60d12e'
@@ -20,7 +19,7 @@ def chat(request):
     paper_id = request.GET.get('paper_id')
     print(question, paper_id)
     language = langid.classify(question)[0]
-    top_k = 5
+    top_k = 3
     retrieval = retriever_qa(question, top_k, paper_id)
     prompt = f'Based on the following materials, answer the question. If the materials are insufficient, reply "I don\'t know". Here are the materials:\n'
     if language == 'zh':
@@ -33,9 +32,10 @@ def chat(request):
         prompt += f'Here are the question:{question}'
     print(prompt)
     response['ans'] = get_ans(request, prompt)
-    user_log = ChatHistory(eid=paper_id, isUser=True, message=question)
+    eid = Build.objects.get(eid=paper_id)
+    user_log = ChatHistory(eid=eid, isUser=True, message=question)
     user_log.save()
-    bot_log = ChatHistory(id=user_log.msgId+1, eid=paper_id, isUser=False, meseage=response['ans'])
+    bot_log = ChatHistory(eid=eid, isUser=False, message=response['ans'])
     bot_log.save()
     return JsonResponse(response)
 
@@ -58,7 +58,7 @@ def retriever_qa(query, top_k, paper_id):
         param=search_params,
         limit=top_k,
         output_fields=["text"],
-        filter=f"paper_id == {paper_id}"
+        filter=f"id like '{paper_id}_%'"
     )
 
     retrieval = []
@@ -97,27 +97,3 @@ def clear_chat(request):
         else:
             return JsonResponse({'status': 'error', 'message': '缺少 paper_id 参数'})
     return JsonResponse({'status': 'error', 'message': '请求方法不正确'})
-
-
-# 向量数据库插入
-def insert_collection(paper_id, content):
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=512,
-        chunk_overlap=40,
-        length_function=len
-    )
-    split_docs = text_splitter.create_documents([content])
-    collection = Collection("paper_collection")
-    collection.load()
-    for document in split_docs:
-        desc = {"messages": [{"content": document.page_content, "role": "user"}]}
-        res = get_embp_embedding(desc, appid=APPID, apikey=APIKEY, apisecret=APISecret)
-        vector = parser_Message(res)
-        collection.insert([{"paper_id": paper_id, "embedding": vector, "text": document.page_content}])
-
-
-# 向量数据库删除
-def delete_collection(paper_id):
-    collection = Collection("paper_collection")
-    collection.load()
-    collection.delete(expr=f"paper_id == {paper_id}")

@@ -88,7 +88,7 @@ export default {
       typingInterval: null,
       isRightPanelVisible: true,  // 控制右侧面板显示
 
-      pdfPath: "/pdf/GraphGPT.pdf",
+      pdfPath: "",
       selectedText: '',
       translatedText: '',
       tooltipStyle: {
@@ -110,6 +110,7 @@ export default {
   },
   created() {
     this.showChatHistory();
+    this.showPDF();
   },
   methods: {
     showChatHistory() {
@@ -257,7 +258,7 @@ export default {
           if (x === _x && y === _y) return; // 如果点击和抬起位置相同，则视为没有选中
 
           this.tooltipStyle.display = 'block';
-          this.tooltipStyle.top = `${_y + 320}px`;
+          this.tooltipStyle.top = `${_y + 100}px`;
           this.tooltipStyle.left = `${_x + 320}px`;
 
           let choose = iframe.contentWindow.getSelection().toString();
@@ -268,17 +269,19 @@ export default {
       };
     },
 
+    showPDF() {
+      const abspdfPath = JSON.parse(sessionStorage.getItem("pdf_file_path"));
+      const pdfIndex = abspdfPath.indexOf("pdf");
+      if (pdfIndex !== -1) {
+        // 从"pdf"开始提取子字符串
+        this.pdfPath = "/"+abspdfPath.substring(pdfIndex).replace(/\\/g, "/"); // 使用正斜杠替换反斜杠
+      }
+    },
+
     // 改变iframe高度
     changeFrameHeight() {
       let iframe = document.getElementById("iframe");
       iframe.height = document.documentElement.clientHeight;
-
-      const abspdfPath = JSON.parse(sessionStorage.getItem("pdf_file_path"));
-      const pdfIndex = abspdfPath.indexOf("pdf");
-      if (pdfIndex !== -1) {
-          // 从"pdf"开始提取子字符串
-          this.pdfPath = originalPath.substring(pdfIndex).replace(/\\/g, "/"); // 使用正斜杠替换反斜杠
-      }
     },
 
     // 翻译文本

@@ -4,11 +4,11 @@ import shutil
 from tkinter import filedialog
 
 import PyPDF2
-import mysql.connector
+import pymysql
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from asst.views import insert_collection
+from asst.services.MilvusService import insert_collection
 from es.driver import add_index
 from es.driver import delete_index
 
@@ -19,12 +19,12 @@ username = ""
 # 相对路径"../pdf/test.pdf"要以/结尾
 store_path = "..\..\..\前端\public\pdf"
 
-# cursor = None
 
 def get_current_max_eid():
     global current_max_eid
-    db = mysql.connector.connect(
+    db = pymysql.connect(
         host="localhost",  # MySQL服务器地址
+        port=3306,
         user="test",  # 用户名
         password="123456",  # 密码
         database="asst"  # 数据库名称
@@ -38,10 +38,12 @@ def get_current_max_eid():
     cursor.close()
     db.close()
 
+
 # 依据eid查询节点的path
 def eid_to_path(eid):
-    db = mysql.connector.connect(
+    db = pymysql.connect(
         host="localhost",  # MySQL服务器地址
+        port=3306,
         user="test",  # 用户名
         password="123456",  # 密码
         database="asst"  # 数据库名称
@@ -64,8 +66,9 @@ def eid_to_path(eid):
 
 # 转化path格式
 def replace_eid_with_name(path):
-    db = mysql.connector.connect(
+    db = pymysql.connect(
         host="localhost",  # MySQL服务器地址
+        port=3306,
         user="test",  # 用户名
         password="123456",  # 密码
         database="asst"  # 数据库名称
@@ -92,8 +95,9 @@ def replace_eid_with_name(path):
 
 # 依据path查询节点的eid
 def path_to_eid(path):
-    db = mysql.connector.connect(
+    db = pymysql.connect(
         host="localhost",  # MySQL服务器地址
+        port=3306,
         user="test",  # 用户名
         password="123456",  # 密码
         database="asst"  # 数据库名称
@@ -131,8 +135,9 @@ def post_selected_node(request):
 
 
 def creat_folder_node(path, name, username):
-    db = mysql.connector.connect(
+    db = pymysql.connect(
         host="localhost",  # MySQL服务器地址
+        port=3306,
         user="test",  # 用户名
         password="123456",  # 密码
         database="asst"  # 数据库名称
@@ -186,8 +191,9 @@ def post_new_folder(request):
 
 
 def creat_pdf_node(fpath, cpath, username):
-    db = mysql.connector.connect(
+    db = pymysql.connect(
         host="localhost",  # MySQL服务器地址
+        port=3306,
         user="test",  # 用户名
         password="123456",  # 密码
         database="asst"  # 数据库名称
@@ -205,6 +211,7 @@ def creat_pdf_node(fpath, cpath, username):
     for page_num in range(num_pages):
         page = pdf_reader.pages[page_num]
         text += page.extract_text()
+    text = text.encode("utf-8", "ignore").decode("utf-8")
     pdf_file.close()
     filename = os.path.basename(cpath)
     # print(filename)
@@ -245,7 +252,7 @@ def post_new_document(request):
             new_path = creat_pdf_node(path, pdf_file_path, username)
         # 获取文件名,保留4位
         file_name = os.path.basename(pdf_file_path)
-        first_four_chars = file_name[:4]
+        first_four_chars = file_name
         message = new_path + '+' + first_four_chars
         if path:
             return JsonResponse({'status': 'success', 'message': message})
@@ -256,8 +263,9 @@ def post_new_document(request):
 
 # 删除此节点以及其所有子节点，返回父节点路径
 def delete_node(path):
-    db = mysql.connector.connect(
+    db = pymysql.connect(
         host="localhost",  # MySQL服务器地址
+        port=3306,
         user="test",  # 用户名
         password="123456",  # 密码
         database="asst"  # 数据库名称
@@ -272,9 +280,9 @@ def delete_node(path):
         asst_build e2 
     WHERE
         e1.path = %s 
-        AND e2.path LIKE concat( e1.path, '/%' );
+        AND e2.path LIKE %s;
     """
-    cursor.execute(query, (path,))
+    cursor.execute(query, (path, path + '/%',))
     results = cursor.fetchall()
     # print(results)
     if results:
@@ -349,8 +357,9 @@ def get_nodes_list(request):
     #     {"name": "node4", "type": "folder", "path": "/1/2/4"},
     # ]
     get_current_max_eid()
-    db = mysql.connector.connect(
+    db = pymysql.connect(
         host="localhost",  # MySQL服务器地址
+        port=3306,
         user="test",  # 用户名
         password="123456",  # 密码
         database="asst"  # 数据库名称
@@ -362,11 +371,11 @@ def get_nodes_list(request):
     results = cursor.fetchall()
     data = []
     if not results:  # 说明是一个新用户
-        path = creat_folder_node(None, "root_node", username)
+        path = creat_folder_node(None, "root_node" + username, username)
         data.append({"name": "root", "type": "folder", "path": path})
     else:
         for name, type_, path in results:
-            node_name = name[:4]
+            node_name = name
             if type_ == "pdf":
                 type_ = "document"  # 转换类型为 'document'
             data.append({"name": node_name, "type": type_, "path": path})
