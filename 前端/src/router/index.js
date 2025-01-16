@@ -7,7 +7,7 @@ const routes = [
     name: 'Layout',
     component: AdminLayout,
     meta: {
-      title: "用例生成",
+      title: "科研小助手",
       icon: "shopping-basket-2-fill"
     },
     children:[
